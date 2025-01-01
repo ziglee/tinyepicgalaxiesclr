@@ -33,3 +33,24 @@
 -- Example 2: add a custom field to the standard "player" table
 -- ALTER TABLE `player` ADD `player_my_custom_field` INT UNSIGNED NOT NULL DEFAULT '0';
 
+ ALTER TABLE `player` ADD `empire_level` INT UNSIGNED NOT NULL DEFAULT '1';
+ ALTER TABLE `player` ADD `energy_level` INT UNSIGNED NOT NULL DEFAULT '2';
+ ALTER TABLE `player` ADD `culture_level` INT UNSIGNED NOT NULL DEFAULT '1';
+ ALTER TABLE `player` ADD `dice_count` INT UNSIGNED NOT NULL DEFAULT '4';
+
+CREATE TABLE IF NOT EXISTS `planet_cards` (
+  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `card_type` varchar(16) NOT NULL,
+  `card_type_arg` int(11) NOT NULL,
+  `card_location` varchar(16) NOT NULL,
+  `card_location_arg` int(11) NOT NULL,
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS `ships` (
+  `ship_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `player_id` int(10) unsigned NOT NULL,
+  `planet_id` int(10) unsigned DEFAULT NULL,
+  `track_progress` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`ship_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;

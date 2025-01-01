@@ -22,7 +22,7 @@ require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
 
 class Game extends \Table
 {
-    private static array $CARD_TYPES;
+    private $planetCards;
 
     /**
      * Your global variables labels:
@@ -39,21 +39,17 @@ class Game extends \Table
         parent::__construct();
 
         $this->initGameStateLabels([
-            // "my_first_global_variable" => 10,
-            // "my_second_global_variable" => 11,
-            // "my_first_game_variant" => 100,
-            // "my_second_game_variant" => 101,
-        ]);        
-
-        self::$CARD_TYPES = [
-            1 => [
-                "card_name" => clienttranslate('Troll'), // ...
-            ],
-            2 => [
-                "card_name" => clienttranslate('Goblin'), // ...
-            ],
-            // ...
-        ];
+            "die_1" => 11,
+            "die_2" => 12,
+            "die_3" => 13,
+            "die_4" => 14,
+            "die_5" => 15,
+            "die_6" => 16,
+            "die_7" => 17,
+        ]);
+        
+        $this->planetCards = $this->getNew("module.common.deck");
+        $this->planetCards->init("planet_cards");
     }
 
     /**
@@ -77,16 +73,16 @@ class Game extends \Table
         }
 
         // Add your game logic to play a card here.
-        $card_name = self::$CARD_TYPES[$card_id]['card_name'];
+        //$card_name = self::$CARD_TYPES[$card_id]['card_name'];
 
         // Notify all players about the card played.
-        $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
-            "player_id" => $player_id,
-            "player_name" => $this->getActivePlayerName(),
-            "card_name" => $card_name,
-            "card_id" => $card_id,
-            "i18n" => ['card_name'],
-        ]);
+        // $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
+        //     "player_id" => $player_id,
+        //     "player_name" => $this->getActivePlayerName(),
+        //     "card_name" => $card_name,
+        //     "card_id" => $card_id,
+        //     "i18n" => ['card_name'],
+        // ]);
 
         // at the end of the action, move to the next state
         $this->gamestate->nextState("playCard");
@@ -259,13 +255,17 @@ class Game extends \Table
             )
         );
 
-        $this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
+        //$this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
         $this->reloadPlayersBasicInfos();
 
         // Init global values with their initial values.
-
-        // Dummy content.
-        //$this->setGameStateInitialValue("my_first_global_variable", 0);
+        $this->setGameStateInitialValue("die_1", 0);
+        $this->setGameStateInitialValue("die_2", 0);
+        $this->setGameStateInitialValue("die_3", 0);
+        $this->setGameStateInitialValue("die_4", 0);
+        $this->setGameStateInitialValue("die_5", 0);
+        $this->setGameStateInitialValue("die_6", 0);
+        $this->setGameStateInitialValue("die_7", 0);
 
         // Init game statistics.
         //

@@ -73,4 +73,11 @@
     background-image: url('img/activationbay.png');
  }
 
+ .galaxy-mat {
+    width: 900px;
+    height: 546px;
+    background-image: url('img/galaxymats.jpg');
+    background-size: auto 100%;
+    z-index: 2;
+}
 

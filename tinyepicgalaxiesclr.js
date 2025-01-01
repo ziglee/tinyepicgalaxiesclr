@@ -50,6 +50,9 @@ function (dojo, declare) {
 
             // Example to add a div on the game area
             document.getElementById('game_play_area').insertAdjacentHTML('beforeend', `
+                <div class="whiteblock" id="planet-cards-row">
+                    <strong>Planet cards row</strong>
+                </div>
                 <div id="activation-bay"></div>
                 <div id="player-tables"></div>
             `);
@@ -63,8 +66,11 @@ function (dojo, declare) {
 
                 document.getElementById('player-tables').insertAdjacentHTML('beforeend', `
                     <div class="whiteblock" id="player-table-${player.id}">
-                        <strong>${player.name}</strong>
-                        <div>Player zone content goes here</div>
+                        <strong style="color:#${player.color};">${player.name}</strong>
+                        <div class="galaxy-mat" id="galaxy-mat-${player.id}"></div>
+                        <div class="colonized-planets-row" id="colonized-planets-row-${player.id}">
+                            <strong>Colonized planets row</strong>
+                        </div>
                     </div>
                 `);
             });
