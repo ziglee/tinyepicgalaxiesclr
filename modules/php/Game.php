@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace Bga\Games\tinyepicgalaxiesclr;
 
 require_once(APP_GAMEMODULE_PATH . "module/table/table.game.php");
+require_once("constants.inc.php");
 
 class Game extends \Table
 {
@@ -47,7 +48,7 @@ class Game extends \Table
             "die_6" => 16,
             "die_7" => 17,
         ]);
-        
+
         $this->planetCards = $this->getNew("module.common.deck");
         $this->planetCards->init("planet_cards");
     }
@@ -266,6 +267,24 @@ class Game extends \Table
         $this->setGameStateInitialValue("die_5", 0);
         $this->setGameStateInitialValue("die_6", 0);
         $this->setGameStateInitialValue("die_7", 0);
+
+        // Create planet cards
+        $planetCards = [];
+        foreach (PLANETS_BY_TYPE as $planet_type => $planets) {
+            foreach ($planets as $planet_id => $planet) {
+                $planetCards[] = ['type' => $planet_type, 'type_arg' => $planet_id, 'nbr' => 1];
+            }
+        }
+        $this->planetCards->createCards($planetCards, 'deck');
+        $this->planetCards->shuffle('deck');
+
+        // Count the number of cards to deal
+        $player_list = $this->getObjectListFromDB("SELECT player_id id FROM player", true);
+        $deal_amount = count($player_list) + 2;
+        if (count($player_list) == 5) {
+            $deal_amount = 6;
+        }
+        $initialCards = $this->planetCards->pickCardsForLocation($deal_amount, 'deck', 'center_table');
 
         // Init game statistics.
         //
