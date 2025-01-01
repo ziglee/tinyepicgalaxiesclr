@@ -50,6 +50,7 @@ function (dojo, declare) {
 
             // Example to add a div on the game area
             document.getElementById('game_play_area').insertAdjacentHTML('beforeend', `
+                <div id="activation-bay"></div>
                 <div id="player-tables"></div>
             `);
             
@@ -60,13 +61,12 @@ function (dojo, declare) {
                 //     <div id="player-counter-${player.id}">A player counter</div>
                 // `);
 
-                // example of adding a div for each player
-                // document.getElementById('player-tables').insertAdjacentHTML('beforeend', `
-                //     <div id="player-table-${player.id}">
-                //         <strong>${player.name}</strong>
-                //         <div>Player zone content goes here</div>
-                //     </div>
-                // `);
+                document.getElementById('player-tables').insertAdjacentHTML('beforeend', `
+                    <div class="whiteblock" id="player-table-${player.id}">
+                        <strong>${player.name}</strong>
+                        <div>Player zone content goes here</div>
+                    </div>
+                `);
             });
             
             // TODO: Set up your game interface here, according to "gamedatas"
@@ -214,7 +214,7 @@ function (dojo, declare) {
         setupNotifications: function()
         {
             console.log( 'notifications subscriptions setup' );
-            
+
             // automatically listen to the notifications, based on the `notif_xxx` function on this class.
             this.bgaSetupPromiseNotifications();
             

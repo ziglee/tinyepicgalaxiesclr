@@ -67,6 +67,10 @@
     }
 */
 
-
+#activation-bay {
+    width: 585px;
+    height: 271px;
+    background-image: url('img/activationbay.png');
+ }
 
 
