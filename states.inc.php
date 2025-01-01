@@ -51,54 +51,102 @@
 
 require_once("modules/php/constants.inc.php");
 
-$machinestates = [
-
+$basicGameStates = [
     // The initial state. Please do not modify.
-
-    1 => array(
+    ST_BGA_GAME_SETUP => [
         "name" => "gameSetup",
-        "description" => "",
+        "description" => clienttranslate("Game setup"),
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => ["" => 2]
-    ),
-
-    // Note: ID=2 => your first state
-
-    2 => [
-        "name" => "playerTurn",
-        "description" => clienttranslate('${actplayer} must play a card or pass'),
-        "descriptionmyturn" => clienttranslate('${you} must play a card or pass'),
-        "type" => "activeplayer",
-        "args" => "argPlayerTurn",
-        "possibleactions" => [
-            // these actions are called from the front with bgaPerformAction, and matched to the function on the game.php file
-            "actPlayCard", 
-            "actPass",
-        ],
-        "transitions" => ["playCard" => 3, "pass" => 3]
+        "transitions" => [ "" => ST_DEAL_MISSIONS ]
     ],
-
-    3 => [
-        "name" => "nextPlayer",
-        "description" => '',
-        "type" => "game",
-        "action" => "stNextPlayer",
-        "updateGameProgression" => true,
-        "transitions" => ["endGame" => 99, "nextPlayer" => 2]
-    ],
-
+   
     // Final state.
     // Please do not modify (and do not overload action/args methods).
-    99 => [
+    ST_END_GAME => [
         "name" => "gameEnd",
         "description" => clienttranslate("End of game"),
         "type" => "manager",
         "action" => "stGameEnd",
         "args" => "argGameEnd"
     ],
-
 ];
 
+$playerActionsGameStates = [
+    ST_MULTIPLAYER_CHOOSE_MISSION => [
+        "name" => "multiChooseMission",
+        "description" => clienttranslate('Other players must choose a secret mission'),
+        "descriptionmyturn" => '',
+        "type" => "multipleactiveplayer",
+        "initialprivate" => ST_PRIVATE_CHOOSE_MISSION,
+        "action" => "stChooseMission",
+        "possibleactions" => [],
+        "transitions" => [
+            "start" => ST_PLAYER_CHOOSE_ACTION,
+        ],
+    ],
 
+    ST_PRIVATE_CHOOSE_MISSION => [
+        "name" => "privateChooseMission",
+        "descriptionmyturn" => clienttranslate('${you} must choose one secret mission'),
+        "type" => "private",
+        "args" => "argPrivateChooseMission",
+        "possibleactions" => [
+            "actChooseMission",
+        ],
+        "transitions" => [],
+    ],
 
+    ST_PLAYER_CHOOSE_ACTION => [
+        "name" => "chooseAction",
+        "description" => clienttranslate('${actplayer} must activate a die, reroll or converte dice'), 
+        "descriptionmyturn" => clienttranslate('${you} must activate a die, reroll or converte dice'),
+        "type" => "activeplayer",
+        "args" => "argChooseAction",
+        "possibleactions" => [
+            // these actions are called from the front with bgaPerformAction, and matched to the function on the game.php file
+            "actPlayCard", 
+            "actPass",
+        ],
+        "transitions" => [
+            "playCard" => ST_NEXT_PLAYER, 
+            "pass" => ST_NEXT_PLAYER
+        ]
+    ],
+];
+
+$gameGameStates = [
+    ST_DEAL_MISSIONS => [
+        "name" => "dealMissions",
+        "description" => "",
+        "type" => "game",
+        "action" => "stDealMissions",
+        "transitions" => [
+            "" => ST_MULTIPLAYER_CHOOSE_MISSION,
+        ],
+    ],
+
+    ST_NEXT_PLAYER => [
+        "name" => "nextPlayer",
+        "description" => '',
+        "type" => "game",
+        "action" => "stNextPlayer",
+        "updateGameProgression" => true,
+        "transitions" => [
+            "nextPlayer" => ST_PLAYER_CHOOSE_ACTION,
+            "endScore" => ST_END_SCORE 
+        ]
+    ],
+
+    ST_END_SCORE => [
+        "name" => "endScore",
+        "description" => "",
+        "type" => "game",
+        "action" => "stEndScore",
+        "transitions" => [
+            "endGame" => ST_END_GAME,
+        ],
+    ],
+];
+
+$machinestates = $basicGameStates + $playerActionsGameStates + $gameGameStates;

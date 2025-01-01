@@ -77,6 +77,18 @@ function (dojo, declare) {
             
             // TODO: Set up your game interface here, according to "gamedatas"
             
+            
+            // Planets in player's area
+            for (let i in gamedatas.hand) {
+                const planet = gamedatas.hand[i];
+                
+            }
+            
+            // Planets on center row
+            for (let i in gamedatas.centerrow) {
+                const planet = gamedatas.centerrow[i];
+                console.log(planet);
+            }
  
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();

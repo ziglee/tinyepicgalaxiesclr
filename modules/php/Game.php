@@ -54,13 +54,96 @@ class Game extends \Table
     }
 
     /**
-     * Player action, example content.
+     * Compute and return the current game progression.
      *
-     * In this scenario, each time a player plays a card, this method will be called. This method is called directly
-     * by the action trigger on the front side with `bgaPerformAction`.
+     * The number returned must be an integer between 0 and 100.
      *
-     * @throws BgaUserException
+     * This method is called each time we are in a game state with the "updateGameProgression" property set to true.
+     *
+     * @return int
+     * @see ./states.inc.php
      */
+    public function getGameProgression()
+    {
+        // TODO: compute and return the game progression
+
+        return 0;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    //////////// Game state actions
+    ////////////
+
+    public function stDealMissions() {
+        $playersIds = $this->getPlayersIds();
+
+        foreach($playersIds as $playerId) {
+            //$this->pickInitialDestinationCards($playerId);
+        }
+        
+        $this->gamestate->nextState('');
+    }
+
+    function stChooseMission() { 
+        $this->gamestate->setAllPlayersMultiactive();
+        $this->gamestate->initializePrivateStateForAllActivePlayers(); 
+    }
+
+    public function stNextPlayer(): void {
+        // Retrieve the active player ID.
+        $player_id = (int)$this->getActivePlayerId();
+
+        // Give some extra time to the active player when he completed an action
+        $this->giveExtraTime($player_id);
+        
+        $this->activeNextPlayer();
+
+        // Go to another gamestate
+        // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
+        $this->gamestate->nextState("nextPlayer");
+    }
+
+    public function stEndScore() {
+        // TODO
+
+        $this->gamestate->nextState('endGame');
+    }
+    
+    //////////////////////////////////////////////////////////////////////////////
+    //////////// Game state arguments
+    ////////////
+
+    public function argPlayerTurn(): array
+    {
+        // Get some values from the current game situation from the database.
+
+        return [
+            "playableCardsIds" => [1, 2],
+        ];
+    }
+
+    public function argPrivateChooseMission(int $playerId) {
+        // TODO
+
+        return [
+            "playableCardsIds" => [1, 2],
+        ];
+    }
+
+    function argChooseAction() {        
+        $playerId = intval(self::getActivePlayerId());
+
+        // TODO
+
+        return [
+            "playableCardsIds" => [1, 2],
+        ];
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    //////////// Player actions
+    //////////// 
+
     public function actPlayCard(int $card_id): void
     {
         // Retrieve the active player ID.
@@ -104,57 +187,15 @@ class Game extends \Table
         $this->gamestate->nextState("pass");
     }
 
-    /**
-     * Game state arguments, example content.
-     *
-     * This method returns some additional information that is very specific to the `playerTurn` game state.
-     *
-     * @return array
-     * @see ./states.inc.php
-     */
-    public function argPlayerTurn(): array
-    {
-        // Get some values from the current game situation from the database.
+    public function actChooseMission(int $missionId) {
+        $playerId = intval(self::getCurrentPlayerId());
 
-        return [
-            "playableCardsIds" => [1, 2],
-        ];
-    }
+        // $this->keepInitialDestinationCards($playerId, $destinationsIds);
 
-    /**
-     * Compute and return the current game progression.
-     *
-     * The number returned must be an integer between 0 and 100.
-     *
-     * This method is called each time we are in a game state with the "updateGameProgression" property set to true.
-     *
-     * @return int
-     * @see ./states.inc.php
-     */
-    public function getGameProgression()
-    {
-        // TODO: compute and return the game progression
-
-        return 0;
-    }
-
-    /**
-     * Game state action, example content.
-     *
-     * The action method of state `nextPlayer` is called everytime the current game state is set to `nextPlayer`.
-     */
-    public function stNextPlayer(): void {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // Give some extra time to the active player when he completed an action
-        $this->giveExtraTime($player_id);
+        // self::incStat(count($destinationsIds), 'keptInitialDestinationCards', $playerId);
         
-        $this->activeNextPlayer();
-
-        // Go to another gamestate
-        // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
-        $this->gamestate->nextState("nextPlayer");
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
+        self::giveExtraTime($playerId);
     }
 
     /**
@@ -197,6 +238,9 @@ class Game extends \Table
      */
     protected function getAllDatas()
     {
+        $stateName = $this->gamestate->state()['name']; 
+        $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
+
         $result = [];
 
         // WARNING: We must only return information visible by the current player.
@@ -209,6 +253,12 @@ class Game extends \Table
         );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
+  
+        // Planets in player area      
+        $result['hand'] = $this->planetCards->getPlayerHand($current_player_id);
+  
+        // Planets on the center table
+        $result['centerrow'] = $this->planetCards->getCardsInLocation('centerrow');
 
         return $result;
     }
@@ -284,7 +334,9 @@ class Game extends \Table
         if (count($player_list) == 5) {
             $deal_amount = 6;
         }
-        $initialCards = $this->planetCards->pickCardsForLocation($deal_amount, 'deck', 'center_table');
+        $initialCards = $this->planetCards->pickCardsForLocation($deal_amount, 'deck', 'centerrow'); 
+
+        // Notify players about initial cards 
 
         // Init game statistics.
         //
@@ -339,5 +391,17 @@ class Game extends \Table
         }
 
         throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    //////////// Utility functions
+    ////////////
+
+    function getPlayersIds() {
+        return array_keys($this->loadPlayersBasicInfos());
+    }
+
+    function getPlayerCount() {
+        return count($this->getPlayersIds());
     }
 }
