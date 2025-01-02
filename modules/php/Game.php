@@ -163,7 +163,10 @@ class Game extends \Table
         $this->initStat('table', 'turnsNumber', 0);
         $this->initStat('player', 'turnsNumber', 0);
 
-        // TODO: Setup the initial game situation here.
+        // Setup the initial game situation here.
+        foreach ($players as $player_id => $player) {
+            $this->DbQuery("INSERT INTO ships (player_id) VALUES ('$player_id'), ('$player_id')");
+        }
 
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();
@@ -196,7 +199,7 @@ class Game extends \Table
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
   
         // Missions in player hand
-        $missionCards = $this->missionCards->getPlayerHand($current_player_id);
+        $missionCards = array_values($this->missionCards->getPlayerHand($current_player_id));
         $missionsCount = count($missionCards);
         if ($missionsCount == 1) {
             $result['mission'] = $missionCards[0];
@@ -207,7 +210,7 @@ class Game extends \Table
         // Colonized planets in player area      
         $result['colonizedplanets'] = $this->planetCards->getPlayerHand($current_player_id);
   
-        // Planets on the center table
+        // Planets on the center table row
         $result['centerrow'] = $this->getPlanetsFromDb($this->planetCards->getCardsInLocation('centerrow'));
 
         return $result;

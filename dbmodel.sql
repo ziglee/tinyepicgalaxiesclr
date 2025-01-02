@@ -57,6 +57,16 @@ CREATE TABLE IF NOT EXISTS `mission_cards` (
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
+CREATE TABLE IF NOT EXISTS `dice` (
+  `die_id` int(10) unsigned NOT NULL,
+  `face` int(10) unsigned DEFAULT '0',
+  `used` BOOL DEFAULT false,
+  `converter` BOOL DEFAULT false,
+  PRIMARY KEY (`die_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `dice` (`die_id`) VALUES (1), (2), (3), (4), (5), (6), (7);
+
 CREATE TABLE IF NOT EXISTS `ships` (
   `ship_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `player_id` int(10) unsigned NOT NULL,

@@ -18,8 +18,6 @@ trait ArgsTrait {
     }
 
     public function argPrivateChooseMission(int $playerId) {
-        // TODO
-
         return [
             "missions" => array_values($this->missionCards->getPlayerHand($playerId)),
         ];

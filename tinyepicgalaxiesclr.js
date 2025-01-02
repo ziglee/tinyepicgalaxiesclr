@@ -46,7 +46,7 @@ function (dojo, declare) {
         
         setup: function( gamedatas )
         {
-            console.log( "Starting game setup" );
+            console.log("Starting game setup", gamedatas);
 
             // Example to add a div on the game area
             document.getElementById('game_play_area').insertAdjacentHTML('beforeend', `
@@ -211,15 +211,13 @@ function (dojo, declare) {
         
         */
         
-        // Example:
-        
         onChooseMissionClick: function( missionId )
         {
             console.log( 'onChooseMissionClick', missionId );
 
             this.bgaPerformAction("actChooseMission", { 
                 selectedMissionId: missionId,
-            }).then(() =>  {                
+            }).then(() =>  {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)
             });        
