@@ -20,6 +20,43 @@ const ST_END_GAME = 99;
 const PLANET_TYPE_CULTURE = "culture";
 const PLANET_TYPE_ENERGY = "energy";
 
+const MISSION_CHARGER = "charger";
+const MISSION_CONQUEROR = "conqueror";
+const MISSION_ELDER = "elder";
+const MISSION_EQUALIZER = "equalizer";
+const MISSION_EXPLORER = "explorer";
+const MISSION_HERMIT = "hermit";
+const MISSION_HOARDER = "hoarder";
+const MISSION_INDUSTRIALIST = "industrialist";
+const MISSION_NOBLE = "noble";
+const MISSION_ORBITER = "orbiter";
+const MISSION_SEEKER = "seeker";
+const MISSION_TRADER = "trader";
+
+const allMissions = [
+    MISSION_CHARGER,
+    MISSION_CONQUEROR,
+    MISSION_ELDER,
+    MISSION_EQUALIZER,
+    MISSION_EXPLORER,
+    MISSION_HERMIT,
+    MISSION_HOARDER,
+    MISSION_INDUSTRIALIST,
+    MISSION_NOBLE,
+    MISSION_ORBITER,
+    MISSION_SEEKER,
+    MISSION_TRADER,
+];
+
+const duelMissions = [
+    MISSION_ELDER,
+    MISSION_EQUALIZER,
+    MISSION_EXPLORER,
+    MISSION_HOARDER,
+    MISSION_INDUSTRIALIST,
+    MISSION_ORBITER,
+];
+
 const PLANET_ANDELLOUXIAN6 = 1;
 const PLANET_AUGHMOORE = 2;
 const PLANET_BIRKOMIUS = 3;

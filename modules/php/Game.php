@@ -23,6 +23,7 @@ require_once("constants.inc.php");
 
 class Game extends \Table
 {
+    private $missionCards;
     private $planetCards;
 
     /**
@@ -49,8 +50,224 @@ class Game extends \Table
             "die_7" => 17,
         ]);
 
+        $this->missionCards = $this->getNew("module.common.deck");
+        $this->missionCards->init("mission_cards");
+
         $this->planetCards = $this->getNew("module.common.deck");
         $this->planetCards->init("planet_cards");
+    }
+
+    /**
+     * Returns the game name.
+     *
+     * IMPORTANT: Please do not modify.
+     */
+    protected function getGameName()
+    {
+        return "tinyepicgalaxiesclr";
+    }
+
+    /**
+     * This method is called only once, when a new game is launched. In this method, you must setup the game
+     *  according to the game rules, so that the game is ready to be played.
+     */
+    protected function setupNewGame($players, $options = [])
+    {
+        // Set the colors of the players with HTML color code. The default below is red/green/blue/orange/brown. The
+        // number of colors defined here must correspond to the maximum number of players allowed for the gams.
+        $gameinfos = $this->getGameinfos();
+        $default_colors = $gameinfos['player_colors'];
+
+        foreach ($players as $player_id => $player) {
+            // Now you can access both $player_id and $player array
+            $query_values[] = vsprintf("('%s', '%s', '%s', '%s', '%s')", [
+                $player_id,
+                array_shift($default_colors),
+                $player["player_canal"],
+                addslashes($player["player_name"]),
+                addslashes($player["player_avatar"]),
+            ]);
+        }
+
+        // Create players based on generic information.
+        //
+        // NOTE: You can add extra field on player table in the database (see dbmodel.sql) and initialize
+        // additional fields directly here.
+        static::DbQuery(
+            sprintf(
+                "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES %s",
+                implode(",", $query_values)
+            )
+        );
+
+        //$this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
+        $this->reloadPlayersBasicInfos();
+
+        // Init global values with their initial values.
+        $this->setGameStateInitialValue("die_1", 0);
+        $this->setGameStateInitialValue("die_2", 0);
+        $this->setGameStateInitialValue("die_3", 0);
+        $this->setGameStateInitialValue("die_4", 0);
+        $this->setGameStateInitialValue("die_5", 0);
+        $this->setGameStateInitialValue("die_6", 0);
+        $this->setGameStateInitialValue("die_7", 0);
+
+        $playerCount = count($players);
+
+        // Create mission cards
+        $missionCards = [];
+        $missions = [];
+        if ($playerCount >= 3) {
+            $missions = allMissions;
+        } else {
+            $missions = duelMissions;
+        }
+        foreach ($missions as $mission) {
+            $missionCards[] = ['type' => $mission, 'type_arg' => 1, 'nbr' => 1];
+        }
+        $this->missionCards->createCards($missionCards, 'deck');
+        $this->missionCards->shuffle('deck');
+
+        // Create planet cards
+        $planetCards = [];
+        foreach (PLANETS_BY_TYPE as $planet_type => $planets) {
+            foreach ($planets as $planet_id => $planet) {
+                $planetCards[] = ['type' => $planet_type, 'type_arg' => $planet_id, 'nbr' => 1];
+            }
+        }
+        $this->planetCards->createCards($planetCards, 'deck');
+        $this->planetCards->shuffle('deck');
+
+        // Count the number of plantes to deal on center row
+        //$player_list = $this->getObjectListFromDB("SELECT player_id id FROM player", true);
+        $deal_amount = $playerCount + 2;
+        if ($playerCount == 5) {
+            $deal_amount = 6;
+        }
+        $initialCards = $this->planetCards->pickCardsForLocation($deal_amount, 'deck', 'centerrow');
+
+        // Draw missions cards
+        foreach ($players as $player_id => $player) {
+            $this->missionCards->pickCards(2, 'deck', $player_id);
+        }
+
+        // Notify players about initial cards ?
+
+        // Init game statistics.
+        // NOTE: statistics used in this file must be defined in your `stats.inc.php` file.
+        $this->initStat('table', 'turnsNumber', 0);
+        $this->initStat('player', 'turnsNumber', 0);
+
+        // TODO: Setup the initial game situation here.
+
+        // Activate first player once everything has been initialized and ready.
+        $this->activeNextPlayer();
+    }
+
+    /**
+     * Migrate database.
+     *
+     * You don't have to care about this until your game has been published on BGA. Once your game is on BGA, this
+     * method is called everytime the system detects a game running with your old database scheme. In this case, if you
+     * change your database scheme, you just have to apply the needed changes in order to update the game database and
+     * allow the game to continue to run with your new version.
+     *
+     * @param int $from_version
+     * @return void
+     */
+    public function upgradeTableDb($from_version)
+    {
+//       if ($from_version <= 1404301345)
+//       {
+//            // ! important ! Use DBPREFIX_<table_name> for all tables
+//
+//            $sql = "ALTER TABLE DBPREFIX_xxxxxxx ....";
+//            $this->applyDbUpgradeToAllDB( $sql );
+//       }
+//
+//       if ($from_version <= 1405061421)
+//       {
+//            // ! important ! Use DBPREFIX_<table_name> for all tables
+//
+//            $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
+//            $this->applyDbUpgradeToAllDB( $sql );
+//       }
+    }
+
+    /*
+     * Gather all information about current game situation (visible by the current player).
+     *
+     * The method is called each time the game interface is displayed to a player, i.e.:
+     *
+     * - when the game starts
+     * - when a player refreshes the game page (F5)
+     */
+    protected function getAllDatas()
+    {
+        $stateName = $this->gamestate->state()['name']; 
+        $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
+
+        $result = [];
+
+        // WARNING: We must only return information visible by the current player.
+        $current_player_id = (int) $this->getCurrentPlayerId();
+
+        // Get information about players.
+        // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
+        $result["players"] = $this->getCollectionFromDb(
+            "SELECT `player_id` `id`, `player_score` `score` FROM `player`"
+        );
+
+        // TODO: Gather all information about current game situation (visible by player $current_player_id).
+  
+        // Planets in player area      
+        $result['hand'] = $this->planetCards->getPlayerHand($current_player_id);
+  
+        // Planets on the center table
+        $result['centerrow'] = $this->planetCards->getCardsInLocation('centerrow');
+
+        return $result;
+    }
+
+    /**
+     * This method is called each time it is the turn of a player who has quit the game (= "zombie" player).
+     * You can do whatever you want in order to make sure the turn of this player ends appropriately
+     * (ex: pass).
+     *
+     * Important: your zombie code will be called when the player leaves the game. This action is triggered
+     * from the main site and propagated to the gameserver from a server, not from a browser.
+     * As a consequence, there is no current player associated to this action. In your zombieTurn function,
+     * you must _never_ use `getCurrentPlayerId()` or `getCurrentPlayerName()`, otherwise it will fail with a
+     * "Not logged" error message.
+     *
+     * @param array{ type: string, name: string } $state
+     * @param int $active_player
+     * @return void
+     * @throws feException if the zombie mode is not supported at this game state.
+     */
+    protected function zombieTurn(array $state, int $active_player): void
+    {
+        $state_name = $state["name"];
+
+        if ($state["type"] === "activeplayer") {
+            switch ($state_name) {
+                default:
+                {
+                    $this->gamestate->nextState("zombiePass");
+                    break;
+                }
+            }
+
+            return;
+        }
+
+        // Make sure player is in a non-blocking status for role turn.
+        if ($state["type"] === "multipleactiveplayer") {
+            $this->gamestate->setPlayerNonMultiactive($active_player, '');
+            return;
+        }
+
+        throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
     }
 
     /**
@@ -196,201 +413,6 @@ class Game extends \Table
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
         self::giveExtraTime($playerId);
-    }
-
-    /**
-     * Migrate database.
-     *
-     * You don't have to care about this until your game has been published on BGA. Once your game is on BGA, this
-     * method is called everytime the system detects a game running with your old database scheme. In this case, if you
-     * change your database scheme, you just have to apply the needed changes in order to update the game database and
-     * allow the game to continue to run with your new version.
-     *
-     * @param int $from_version
-     * @return void
-     */
-    public function upgradeTableDb($from_version)
-    {
-//       if ($from_version <= 1404301345)
-//       {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "ALTER TABLE DBPREFIX_xxxxxxx ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
-//
-//       if ($from_version <= 1405061421)
-//       {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
-    }
-
-    /*
-     * Gather all information about current game situation (visible by the current player).
-     *
-     * The method is called each time the game interface is displayed to a player, i.e.:
-     *
-     * - when the game starts
-     * - when a player refreshes the game page (F5)
-     */
-    protected function getAllDatas()
-    {
-        $stateName = $this->gamestate->state()['name']; 
-        $isEnd = $stateName === 'endScore' || $stateName === 'gameEnd';
-
-        $result = [];
-
-        // WARNING: We must only return information visible by the current player.
-        $current_player_id = (int) $this->getCurrentPlayerId();
-
-        // Get information about players.
-        // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
-        $result["players"] = $this->getCollectionFromDb(
-            "SELECT `player_id` `id`, `player_score` `score` FROM `player`"
-        );
-
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
-  
-        // Planets in player area      
-        $result['hand'] = $this->planetCards->getPlayerHand($current_player_id);
-  
-        // Planets on the center table
-        $result['centerrow'] = $this->planetCards->getCardsInLocation('centerrow');
-
-        return $result;
-    }
-
-    /**
-     * Returns the game name.
-     *
-     * IMPORTANT: Please do not modify.
-     */
-    protected function getGameName()
-    {
-        return "tinyepicgalaxiesclr";
-    }
-
-    /**
-     * This method is called only once, when a new game is launched. In this method, you must setup the game
-     *  according to the game rules, so that the game is ready to be played.
-     */
-    protected function setupNewGame($players, $options = [])
-    {
-        // Set the colors of the players with HTML color code. The default below is red/green/blue/orange/brown. The
-        // number of colors defined here must correspond to the maximum number of players allowed for the gams.
-        $gameinfos = $this->getGameinfos();
-        $default_colors = $gameinfos['player_colors'];
-
-        foreach ($players as $player_id => $player) {
-            // Now you can access both $player_id and $player array
-            $query_values[] = vsprintf("('%s', '%s', '%s', '%s', '%s')", [
-                $player_id,
-                array_shift($default_colors),
-                $player["player_canal"],
-                addslashes($player["player_name"]),
-                addslashes($player["player_avatar"]),
-            ]);
-        }
-
-        // Create players based on generic information.
-        //
-        // NOTE: You can add extra field on player table in the database (see dbmodel.sql) and initialize
-        // additional fields directly here.
-        static::DbQuery(
-            sprintf(
-                "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES %s",
-                implode(",", $query_values)
-            )
-        );
-
-        //$this->reattributeColorsBasedOnPreferences($players, $gameinfos["player_colors"]);
-        $this->reloadPlayersBasicInfos();
-
-        // Init global values with their initial values.
-        $this->setGameStateInitialValue("die_1", 0);
-        $this->setGameStateInitialValue("die_2", 0);
-        $this->setGameStateInitialValue("die_3", 0);
-        $this->setGameStateInitialValue("die_4", 0);
-        $this->setGameStateInitialValue("die_5", 0);
-        $this->setGameStateInitialValue("die_6", 0);
-        $this->setGameStateInitialValue("die_7", 0);
-
-        // Create planet cards
-        $planetCards = [];
-        foreach (PLANETS_BY_TYPE as $planet_type => $planets) {
-            foreach ($planets as $planet_id => $planet) {
-                $planetCards[] = ['type' => $planet_type, 'type_arg' => $planet_id, 'nbr' => 1];
-            }
-        }
-        $this->planetCards->createCards($planetCards, 'deck');
-        $this->planetCards->shuffle('deck');
-
-        // Count the number of cards to deal
-        $player_list = $this->getObjectListFromDB("SELECT player_id id FROM player", true);
-        $deal_amount = count($player_list) + 2;
-        if (count($player_list) == 5) {
-            $deal_amount = 6;
-        }
-        $initialCards = $this->planetCards->pickCardsForLocation($deal_amount, 'deck', 'centerrow'); 
-
-        // Notify players about initial cards 
-
-        // Init game statistics.
-        //
-        // NOTE: statistics used in this file must be defined in your `stats.inc.php` file.
-
-        // Dummy content.
-        // $this->initStat("table", "table_teststat1", 0);
-        // $this->initStat("player", "player_teststat1", 0);
-
-        // TODO: Setup the initial game situation here.
-
-        // Activate first player once everything has been initialized and ready.
-        $this->activeNextPlayer();
-    }
-
-    /**
-     * This method is called each time it is the turn of a player who has quit the game (= "zombie" player).
-     * You can do whatever you want in order to make sure the turn of this player ends appropriately
-     * (ex: pass).
-     *
-     * Important: your zombie code will be called when the player leaves the game. This action is triggered
-     * from the main site and propagated to the gameserver from a server, not from a browser.
-     * As a consequence, there is no current player associated to this action. In your zombieTurn function,
-     * you must _never_ use `getCurrentPlayerId()` or `getCurrentPlayerName()`, otherwise it will fail with a
-     * "Not logged" error message.
-     *
-     * @param array{ type: string, name: string } $state
-     * @param int $active_player
-     * @return void
-     * @throws feException if the zombie mode is not supported at this game state.
-     */
-    protected function zombieTurn(array $state, int $active_player): void
-    {
-        $state_name = $state["name"];
-
-        if ($state["type"] === "activeplayer") {
-            switch ($state_name) {
-                default:
-                {
-                    $this->gamestate->nextState("zombiePass");
-                    break;
-                }
-            }
-
-            return;
-        }
-
-        // Make sure player is in a non-blocking status for role turn.
-        if ($state["type"] === "multipleactiveplayer") {
-            $this->gamestate->setPlayerNonMultiactive($active_player, '');
-            return;
-        }
-
-        throw new \feException("Zombie mode not supported at this game state: \"{$state_name}\".");
     }
 
     //////////////////////////////////////////////////////////////////////////////
