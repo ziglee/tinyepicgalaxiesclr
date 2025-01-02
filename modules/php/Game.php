@@ -23,8 +23,13 @@ require_once("constants.inc.php");
 
 class Game extends \Table
 {
-    private $missionCards;
-    private $planetCards;
+    use UtilTrait;
+    use ActionTrait;
+    use StateTrait;
+    use ArgsTrait;
+
+    private \Deck $missionCards;
+    private \Deck $planetCards;
 
     /**
      * Your global variables labels:
@@ -164,36 +169,6 @@ class Game extends \Table
         $this->activeNextPlayer();
     }
 
-    /**
-     * Migrate database.
-     *
-     * You don't have to care about this until your game has been published on BGA. Once your game is on BGA, this
-     * method is called everytime the system detects a game running with your old database scheme. In this case, if you
-     * change your database scheme, you just have to apply the needed changes in order to update the game database and
-     * allow the game to continue to run with your new version.
-     *
-     * @param int $from_version
-     * @return void
-     */
-    public function upgradeTableDb($from_version)
-    {
-//       if ($from_version <= 1404301345)
-//       {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "ALTER TABLE DBPREFIX_xxxxxxx ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
-//
-//       if ($from_version <= 1405061421)
-//       {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
-//            $this->applyDbUpgradeToAllDB( $sql );
-//       }
-    }
-
     /*
      * Gather all information about current game situation (visible by the current player).
      *
@@ -233,9 +208,26 @@ class Game extends \Table
         $result['colonizedplanets'] = $this->planetCards->getPlayerHand($current_player_id);
   
         // Planets on the center table
-        $result['centerrow'] = getPlanetsFromDb($this->planetCards->getCardsInLocation('centerrow'));
+        $result['centerrow'] = $this->getPlanetsFromDb($this->planetCards->getCardsInLocation('centerrow'));
 
         return $result;
+    }
+
+    /**
+     * Compute and return the current game progression.
+     *
+     * The number returned must be an integer between 0 and 100.
+     *
+     * This method is called each time we are in a game state with the "updateGameProgression" property set to true.
+     *
+     * @return int
+     * @see ./states.inc.php
+     */
+    public function getGameProgression()
+    {
+        // TODO: compute and return the game progression
+
+        return 0;
     }
 
     /**
@@ -280,159 +272,32 @@ class Game extends \Table
     }
 
     /**
-     * Compute and return the current game progression.
+     * Migrate database.
      *
-     * The number returned must be an integer between 0 and 100.
+     * You don't have to care about this until your game has been published on BGA. Once your game is on BGA, this
+     * method is called everytime the system detects a game running with your old database scheme. In this case, if you
+     * change your database scheme, you just have to apply the needed changes in order to update the game database and
+     * allow the game to continue to run with your new version.
      *
-     * This method is called each time we are in a game state with the "updateGameProgression" property set to true.
-     *
-     * @return int
-     * @see ./states.inc.php
+     * @param int $from_version
+     * @return void
      */
-    public function getGameProgression()
+    public function upgradeTableDb($from_version)
     {
-        // TODO: compute and return the game progression
-
-        return 0;
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //////////// Game state actions
-    ////////////
-
-    public function stDealMissions() {
-        $playersIds = $this->getPlayersIds();
-
-        foreach($playersIds as $playerId) {
-            //$this->pickInitialDestinationCards($playerId);
-        }
-        
-        $this->gamestate->nextState('');
-    }
-
-    function stChooseMission() { 
-        $this->gamestate->setAllPlayersMultiactive();
-        $this->gamestate->initializePrivateStateForAllActivePlayers(); 
-    }
-
-    public function stNextPlayer(): void {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // Give some extra time to the active player when he completed an action
-        $this->giveExtraTime($player_id);
-        
-        $this->activeNextPlayer();
-
-        // Go to another gamestate
-        // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
-        $this->gamestate->nextState("nextPlayer");
-    }
-
-    public function stEndScore() {
-        // TODO
-
-        $this->gamestate->nextState('endGame');
-    }
-    
-    //////////////////////////////////////////////////////////////////////////////
-    //////////// Game state arguments
-    ////////////
-
-    public function argPlayerTurn(): array
-    {
-        // Get some values from the current game situation from the database.
-
-        return [
-            "playableCardsIds" => [1, 2],
-        ];
-    }
-
-    public function argPrivateChooseMission(int $playerId) {
-        // TODO
-
-        return [
-            "playableCardsIds" => [1, 2],
-        ];
-    }
-
-    function argChooseAction() {        
-        $playerId = intval(self::getActivePlayerId());
-
-        // TODO
-
-        return [
-            "playableCardsIds" => [1, 2],
-        ];
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //////////// Player actions
-    //////////// 
-
-    public function actPlayCard(int $card_id): void
-    {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // check input values
-        $args = $this->argPlayerTurn();
-        $playableCardsIds = $args['playableCardsIds'];
-        if (!in_array($card_id, $playableCardsIds)) {
-            throw new \BgaUserException('Invalid card choice');
-        }
-
-        // Add your game logic to play a card here.
-        //$card_name = self::$CARD_TYPES[$card_id]['card_name'];
-
-        // Notify all players about the card played.
-        // $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
-        //     "player_id" => $player_id,
-        //     "player_name" => $this->getActivePlayerName(),
-        //     "card_name" => $card_name,
-        //     "card_id" => $card_id,
-        //     "i18n" => ['card_name'],
-        // ]);
-
-        // at the end of the action, move to the next state
-        $this->gamestate->nextState("playCard");
-    }
-
-    public function actPass(): void
-    {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        // Notify all players about the choice to pass.
-        $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} passes'), [
-            "player_id" => $player_id,
-            "player_name" => $this->getActivePlayerName(),
-        ]);
-
-        // at the end of the action, move to the next state
-        $this->gamestate->nextState("pass");
-    }
-
-    public function actChooseMission(int $missionId) {
-        $playerId = intval(self::getCurrentPlayerId());
-
-        // $this->keepInitialDestinationCards($playerId, $destinationsIds);
-
-        // self::incStat(count($destinationsIds), 'keptInitialDestinationCards', $playerId);
-        
-        $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
-        self::giveExtraTime($playerId);
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //////////// Utility functions
-    ////////////
-
-    function getPlayersIds() {
-        return array_keys($this->loadPlayersBasicInfos());
-    }
-
-    function getPlayerCount() {
-        return count($this->getPlayersIds());
+//       if ($from_version <= 1404301345)
+//       {
+//            // ! important ! Use DBPREFIX_<table_name> for all tables
+//
+//            $sql = "ALTER TABLE DBPREFIX_xxxxxxx ....";
+//            $this->applyDbUpgradeToAllDB( $sql );
+//       }
+//
+//       if ($from_version <= 1405061421)
+//       {
+//            // ! important ! Use DBPREFIX_<table_name> for all tables
+//
+//            $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
+//            $this->applyDbUpgradeToAllDB( $sql );
+//       }
     }
 }

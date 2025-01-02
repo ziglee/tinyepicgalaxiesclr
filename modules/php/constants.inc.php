@@ -17,45 +17,51 @@ const ST_END_SCORE = 98;
 
 const ST_END_GAME = 99;
 
+/*
+ * Missions
+ */
+ const MISSION_CHARGER = "charger";
+ const MISSION_CONQUEROR = "conqueror";
+ const MISSION_ELDER = "elder";
+ const MISSION_EQUALIZER = "equalizer";
+ const MISSION_EXPLORER = "explorer";
+ const MISSION_HERMIT = "hermit";
+ const MISSION_HOARDER = "hoarder";
+ const MISSION_INDUSTRIALIST = "industrialist";
+ const MISSION_NOBLE = "noble";
+ const MISSION_ORBITER = "orbiter";
+ const MISSION_SEEKER = "seeker";
+ const MISSION_TRADER = "trader";
+ 
+ const allMissions = [
+     MISSION_CHARGER,
+     MISSION_CONQUEROR,
+     MISSION_ELDER,
+     MISSION_EQUALIZER,
+     MISSION_EXPLORER,
+     MISSION_HERMIT,
+     MISSION_HOARDER,
+     MISSION_INDUSTRIALIST,
+     MISSION_NOBLE,
+     MISSION_ORBITER,
+     MISSION_SEEKER,
+     MISSION_TRADER,
+ ];
+ 
+ const duelMissions = [
+     MISSION_ELDER,
+     MISSION_EQUALIZER,
+     MISSION_EXPLORER,
+     MISSION_HOARDER,
+     MISSION_INDUSTRIALIST,
+     MISSION_ORBITER,
+ ];
+
+/*
+ * Planets
+ */
 const PLANET_TYPE_CULTURE = "culture";
 const PLANET_TYPE_ENERGY = "energy";
-
-const MISSION_CHARGER = "charger";
-const MISSION_CONQUEROR = "conqueror";
-const MISSION_ELDER = "elder";
-const MISSION_EQUALIZER = "equalizer";
-const MISSION_EXPLORER = "explorer";
-const MISSION_HERMIT = "hermit";
-const MISSION_HOARDER = "hoarder";
-const MISSION_INDUSTRIALIST = "industrialist";
-const MISSION_NOBLE = "noble";
-const MISSION_ORBITER = "orbiter";
-const MISSION_SEEKER = "seeker";
-const MISSION_TRADER = "trader";
-
-const allMissions = [
-    MISSION_CHARGER,
-    MISSION_CONQUEROR,
-    MISSION_ELDER,
-    MISSION_EQUALIZER,
-    MISSION_EXPLORER,
-    MISSION_HERMIT,
-    MISSION_HOARDER,
-    MISSION_INDUSTRIALIST,
-    MISSION_NOBLE,
-    MISSION_ORBITER,
-    MISSION_SEEKER,
-    MISSION_TRADER,
-];
-
-const duelMissions = [
-    MISSION_ELDER,
-    MISSION_EQUALIZER,
-    MISSION_EXPLORER,
-    MISSION_HOARDER,
-    MISSION_INDUSTRIALIST,
-    MISSION_ORBITER,
-];
 
 const PLANET_ANDELLOUXIAN6 = 1;
 const PLANET_AUGHMOORE = 2;
@@ -86,24 +92,6 @@ class PlanetInfo {
     }
 }
 
-class PlanetCard {
-    public int $id;
-    public string $location;
-    public int $location_arg;
-    public string $type;
-    public int $type_arg;
-    public PlanetInfo $info;
-
-    public function __construct($dbCard) {
-        $this->id = intval($dbCard['id']);
-        $this->location = $dbCard['location'];
-        $this->location_arg = intval($dbCard['location_arg']);
-        $this->type = $dbCard['type'];
-        $this->type_arg = intval($dbCard['type_arg']);
-        $this->info = PLANETS_BY_TYPE[$this->type][$this->type_arg];
-    }
-}
-
 const CULTURE_PLANETS = array(
     PLANET_ANDELLOUXIAN6 => new PlanetInfo("ANDELLOUXIAN-6", "economy", 4, 5),
     PLANET_BISSCHOP => new PlanetInfo("BISSCHOP", "economy", 1, 1),
@@ -126,9 +114,5 @@ const PLANETS_BY_TYPE = array(
     PLANET_TYPE_CULTURE => CULTURE_PLANETS,
     PLANET_TYPE_ENERGY => ENERGY_PLANETS,
 );
-
-function getPlanetsFromDb(array $dbObjects) {
-    return array_map(fn($dbObject) => new PlanetCard($dbObject), array_values($dbObjects));
-}
 
 ?>

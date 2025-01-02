@@ -176,15 +176,11 @@ function (dojo, declare) {
             {            
                 switch( stateName )
                 {
-                 case 'playerTurn':    
-                    const playableCardsIds = args.playableCardsIds; // returned by the argPlayerTurn
-
-                    // Add test action buttons in the action status bar, simulating a card click:
-                    playableCardsIds.forEach(
-                        cardId => this.addActionButton(`actPlayCard${cardId}-btn`, _('Play card with id ${card_id}').replace('${card_id}', cardId), () => this.onCardClick(cardId))
-                    ); 
-
-                    this.addActionButton('actPass-btn', _('Pass'), () => this.bgaPerformAction("actPass"), null, null, 'gray'); 
+                 case 'privateChooseMission':    
+                    const missions = args.missions; // returned by the argPrivateChooseMission
+                    missions.forEach(
+                        mission => this.addActionButton(`actChooseMission${mission.id}-btn`, _('Choose mission ${mission}').replace('${mission}', mission.type), () => this.onChooseMissionClick(mission.id)) 
+                    );
                     break;
                 }
             }
@@ -217,12 +213,12 @@ function (dojo, declare) {
         
         // Example:
         
-        onCardClick: function( card_id )
+        onChooseMissionClick: function( missionId )
         {
-            console.log( 'onCardClick', card_id );
+            console.log( 'onChooseMissionClick', missionId );
 
-            this.bgaPerformAction("actPlayCard", { 
-                card_id,
+            this.bgaPerformAction("actChooseMission", { 
+                selectedMissionId: missionId,
             }).then(() =>  {                
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)

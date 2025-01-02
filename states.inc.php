@@ -99,8 +99,8 @@ $playerActionsGameStates = [
 
     ST_PLAYER_CHOOSE_ACTION => [
         "name" => "chooseAction",
-        "description" => clienttranslate('${actplayer} must activate a die, reroll or converte dice'), 
-        "descriptionmyturn" => clienttranslate('${you} must activate a die, reroll or converte dice'),
+        "description" => clienttranslate('${actplayer} must activate a die, reroll or convert dice'), 
+        "descriptionmyturn" => clienttranslate('${you} must activate a die, reroll or convert dice'),
         "type" => "activeplayer",
         "args" => "argChooseAction",
         "possibleactions" => [
