@@ -50,6 +50,7 @@ function (dojo, declare) {
 
             // Example to add a div on the game area
             document.getElementById('game_play_area').insertAdjacentHTML('beforeend', `
+                <div id="missions-to-pick"></div>
                 <div class="whiteblock" id="planet-cards-row">
                     <strong>Planet cards row</strong>
                 </div>
@@ -77,17 +78,29 @@ function (dojo, declare) {
             
             // TODO: Set up your game interface here, according to "gamedatas"
             
-            
-            // Planets in player's area
-            for (let i in gamedatas.hand) {
-                const planet = gamedatas.hand[i];
-                
+            // Missions to pick
+            for (let i in gamedatas.missions) {
+                const mission = gamedatas.missions[i];
+                document.getElementById('missions-to-pick').insertAdjacentHTML('beforeend', `
+                    <div id="mission-to-pick-${mission.id}">
+                        <div>${mission.type}</div>
+                    </div>
+                `);
             }
             
             // Planets on center row
             for (let i in gamedatas.centerrow) {
                 const planet = gamedatas.centerrow[i];
-                console.log(planet);
+                document.getElementById('planet-cards-row').insertAdjacentHTML('beforeend', `
+                    <div id="planet-${planet.id}">
+                        <div>${planet.info.name} ${planet.type} ${planet.info.trackType}</div>
+                    </div>
+                `);
+            }
+
+            // Colonized planets in player's area
+            for (let i in gamedatas.colonizedplanets) {
+                const planet = gamedatas.colonizedplanets[i];
             }
  
             // Setup game notifications to handle (see "setupNotifications" method below)

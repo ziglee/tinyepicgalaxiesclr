@@ -220,11 +220,20 @@ class Game extends \Table
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
   
-        // Planets in player area      
-        $result['hand'] = $this->planetCards->getPlayerHand($current_player_id);
+        // Missions in player hand
+        $missionCards = $this->missionCards->getPlayerHand($current_player_id);
+        $missionsCount = count($missionCards);
+        if ($missionsCount == 1) {
+            $result['mission'] = $missionCards[0];
+        } else {
+            $result['missions'] = $missionCards;
+        }
+
+        // Colonized planets in player area      
+        $result['colonizedplanets'] = $this->planetCards->getPlayerHand($current_player_id);
   
         // Planets on the center table
-        $result['centerrow'] = $this->planetCards->getCardsInLocation('centerrow');
+        $result['centerrow'] = getPlanetsFromDb($this->planetCards->getCardsInLocation('centerrow'));
 
         return $result;
     }

@@ -73,16 +73,34 @@ const PLANET_HOEFKER = 13;
 const PLANET_JAC110912 = 14;
 
 class PlanetInfo {
-    public $name;
-    public $trackType;
-    public $trackLength;
-    public $pointsWorth;
+    public string $name;
+    public string $trackType;
+    public int $trackLength;
+    public int $pointsWorth;
 
     function __construct($name, $trackType, $trackLength, $pointsWorth) {
         $this->name = $name;
         $this->trackType = $trackType;
         $this->trackLength = $trackLength;
         $this->pointsWorth = $pointsWorth;
+    }
+}
+
+class PlanetCard {
+    public int $id;
+    public string $location;
+    public int $location_arg;
+    public string $type;
+    public int $type_arg;
+    public PlanetInfo $info;
+
+    public function __construct($dbCard) {
+        $this->id = intval($dbCard['id']);
+        $this->location = $dbCard['location'];
+        $this->location_arg = intval($dbCard['location_arg']);
+        $this->type = $dbCard['type'];
+        $this->type_arg = intval($dbCard['type_arg']);
+        $this->info = PLANETS_BY_TYPE[$this->type][$this->type_arg];
     }
 }
 
@@ -108,5 +126,9 @@ const PLANETS_BY_TYPE = array(
     PLANET_TYPE_CULTURE => CULTURE_PLANETS,
     PLANET_TYPE_ENERGY => ENERGY_PLANETS,
 );
+
+function getPlanetsFromDb(array $dbObjects) {
+    return array_map(fn($dbObject) => new PlanetCard($dbObject), array_values($dbObjects));
+}
 
 ?>
