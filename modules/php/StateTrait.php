@@ -24,29 +24,43 @@ trait StateTrait {
     }
 
     public function stNextPlayer(): void {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
+        // // Retrieve the active player ID.
+        // $player_id = (int)$this->getActivePlayerId();
 
-        // Give some extra time to the active player when he completed an action
-        $this->giveExtraTime($player_id);
+        // if ($this->isAllRolledDiceUsed()) {
+        //     $this->gamestate->nextState("rollDice");
+        //     return;
+        // }
+
+        // // Give some extra time to the active player when he completed an action
+        // $this->giveExtraTime($player_id);
+
+        // TODO: check score
+        //$this->gamestate->nextState("endScore");
         
-        $this->activeNextPlayer();
+        $player_id = intval($this->activeNextPlayer());
+
+        $this->resetDice();
+        $dice_count = $this->getPlayerDiceCount($player_id);
+        $this->rollDice($dice_count);
+
+        $dice = $this->getCollectionFromDb(
+            "SELECT `die_id` `id`, `face`, `used`, `converter` FROM `dice` ORDER BY `die_id`"
+        );
+
+        $this->notifyAllPlayers(
+            "diceUpdated", 
+            clienttranslate( '${player_name} rolled the dice' ), 
+            array(
+                'player_id' => $player_id,
+                'player_name' => $this->getActivePlayerName(),
+                'dice' => $dice,
+            ) 
+        );
 
         // Go to another gamestate
         // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
         $this->gamestate->nextState("nextPlayer");
-    }
-
-    function stDiceRoll() {
-        $this->resetDice();
-
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
-
-        $dice_count = $this->getPlayerDiceCount($player_id);
-        $this->rollDice($dice_count);
-
-        $this->gamestate->nextState("noDiceChoice"); 
     }
 
     public function stEndScore() {

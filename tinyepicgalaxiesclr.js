@@ -349,5 +349,14 @@ function (dojo, declare) {
         },    
         
         */
+
+        notif_diceUpdated: async function( notif )
+        {
+            console.log('notif_diceUpdated');
+            for (let dieId = 1; dieId <= 7; dieId++) {
+                const die = notif.dice[dieId];
+                $('die-slot-' + (die.id)).innerHTML = die.face;
+            }
+        },
    });             
 });

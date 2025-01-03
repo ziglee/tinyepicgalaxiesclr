@@ -10,6 +10,10 @@ trait UtilTrait {
     //////////// Utility functions
     ////////////
 
+    function getUniqueIntValueFromDB(string $sql) {
+        return intval(self::getUniqueValueFromDB($sql));
+    }
+
     function getPlayersIds() {
         return array_keys($this->loadPlayersBasicInfos());
     }
@@ -28,6 +32,10 @@ trait UtilTrait {
 
     function getPlanetsFromDb(array $dbObjects) {
         return array_map(fn($dbObject) => new \PlanetCard($dbObject), array_values($dbObjects));
+    }
+
+    function isAllRolledDiceUsed(): bool {
+        return $this->getUniqueIntValueFromDB("SELECT IF(COUNT(*) > 0, TRUE, FALSE) AS rolled_unused_count FROM dice AS d WHERE d.used = 0 AND d.face <> 0");
     }
 
     function resetDice() {

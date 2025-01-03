@@ -83,6 +83,10 @@
 }
 */
 
+#dice-tray {
+    display: flex;
+}
+
 .galaxy-mat {
     border-style: solid;
     border-width: 2px;

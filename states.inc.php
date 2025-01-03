@@ -82,7 +82,7 @@ $playerActionsGameStates = [
         "action" => "stChooseMission",
         "possibleactions" => [],
         "transitions" => [
-            "start" => ST_PLAYER_CHOOSE_ACTION,
+            "start" => ST_NEXT_PLAYER,
         ],
     ],
 
@@ -135,15 +135,6 @@ $gameGameStates = [
         "transitions" => [
             "nextPlayer" => ST_PLAYER_CHOOSE_ACTION,
             "endScore" => ST_END_SCORE 
-        ]
-    ],
-
-    ST_DICE_ROLL => [
-        "name" => "diceRoll",
-        "description" => '',
-        "type" => "game",
-        "action" => "stDiceRoll",
-        "transitions" => [
         ]
     ],
 
