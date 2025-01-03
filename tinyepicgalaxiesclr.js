@@ -51,6 +51,16 @@ function (dojo, declare) {
             // Example to add a div on the game area
             document.getElementById('game_play_area').insertAdjacentHTML('beforeend', `
                 <div id="missions-to-pick"></div>
+                <div class="whiteblock" id="dice-tray">
+                    <strong>Dice tray</strong>
+                    <div class="die-slot" id="die-slot-1"></div>
+                    <div class="die-slot" id="die-slot-2"></div>
+                    <div class="die-slot" id="die-slot-3"></div>
+                    <div class="die-slot" id="die-slot-4"></div>
+                    <div class="die-slot" id="die-slot-5"></div>
+                    <div class="die-slot" id="die-slot-6"></div>
+                    <div class="die-slot" id="die-slot-7"></div>
+                </div>
                 <div class="whiteblock" id="planet-cards-row">
                     <strong>Planet cards row</strong>
                 </div>
@@ -58,6 +68,44 @@ function (dojo, declare) {
                 <div id="player-tables"></div>
             `);
             
+            // Set up your game interface here, according to "gamedatas"
+            for (let dieId = 1; dieId <= 7; dieId++) {
+                const die = gamedatas.dice[dieId];
+                $('die-slot-' + (die.id)).innerHTML = die.face;
+            }
+
+            // Missions to pick
+            for (let i in gamedatas.missions) {
+                const mission = gamedatas.missions[i];
+                document.getElementById('missions-to-pick').insertAdjacentHTML('beforeend', `
+                    <div id="mission-to-pick-${mission.id}">
+                        <div>${mission.type}</div>
+                    </div>
+                `);
+            }
+            
+            // Planets on center row
+            for (let i in gamedatas.centerrow) {
+                const planet = gamedatas.centerrow[i];
+                document.getElementById('planet-cards-row').insertAdjacentHTML('beforeend', `
+                    <div id="planet-${planet.id}">
+                        <div>${planet.info.name} ${planet.type} (Points ${planet.info.pointsWorth})</div>
+                        <div class="planet-track" id="planet-track-${planet.id}"></div>
+                    </div>
+                `);
+                document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
+                    <div class="planet-track-start" id="planet-track-${planet.id}-slot-start">start</div>
+                `);
+                for (let trackSlot = 1; trackSlot <= planet.info.trackLength; trackSlot++) {
+                document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
+                    <div class="planet-track-slot" id="planet-track-${planet.id}-slot-${trackSlot}">${trackSlot}</div>
+                `);
+                }
+                document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
+                    <div class="planet-track-end" id="planet-track-${planet.id}-slot-end">${planet.info.trackType}</div>
+                `);
+            }
+
             // Setting up player boards
             Object.values(gamedatas.players).forEach(player => {
                 // example of setting up players boards
@@ -71,10 +119,6 @@ function (dojo, declare) {
                         <div class="galaxy-mat" id="galaxy-mat-${player.id}">
                             <div class="ship-hangar" id="ships-hangar-${player.id}">
                                 Hangar
-                                <div class="ships-hangar-slot" id="ships-hangar-${player.id}-slot-1"></div>
-                                <div class="ships-hangar-slot" id="ships-hangar-${player.id}-slot-2"></div>
-                                <div class="ships-hangar-slot" id="ships-hangar-${player.id}-slot-3"></div>
-                                <div class="ships-hangar-slot" id="ships-hangar-${player.id}-slot-4"></div>
                             </div>
                             <div class="empire-track" id="empire-track-${player.id}">
                                 Empire
@@ -121,37 +165,20 @@ function (dojo, declare) {
                     </div>
                 `);
             });
-            
-            // TODO: Set up your game interface here, according to "gamedatas"
-            
-            Object.values(gamedatas.dice).forEach(die => {
-                
-            });
-
-            // Missions to pick
-            for (let i in gamedatas.missions) {
-                const mission = gamedatas.missions[i];
-                document.getElementById('missions-to-pick').insertAdjacentHTML('beforeend', `
-                    <div id="mission-to-pick-${mission.id}">
-                        <div>${mission.type}</div>
-                    </div>
-                `);
-            }
-            
-            // Planets on center row
-            for (let i in gamedatas.centerrow) {
-                const planet = gamedatas.centerrow[i];
-                document.getElementById('planet-cards-row').insertAdjacentHTML('beforeend', `
-                    <div id="planet-${planet.id}">
-                        <div>${planet.info.name} ${planet.type} ${planet.info.trackType}</div>
-                    </div>
-                `);
-            }
 
             // Colonized planets in player's area
             for (let i in gamedatas.colonizedplanets) {
                 const planet = gamedatas.colonizedplanets[i];
             }
+
+            Object.values(gamedatas.ships).forEach(ship => {
+                if (ship.planet_id == null) {
+                    document.getElementById(`ships-hangar-${ship.player_id}`).insertAdjacentHTML('beforeend', `
+                        <div class="ships-hangar-slot" id="ship-${ship.id}">${ship.id}</div>
+                    `);
+                }
+                console.log(ship);
+            });
  
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();

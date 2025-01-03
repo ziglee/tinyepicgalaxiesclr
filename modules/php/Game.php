@@ -188,6 +188,9 @@ class Game extends \Table
         $result["dice"] = $this->getCollectionFromDb(
             "SELECT `die_id` `id`, `face`, `used`, `converter` FROM `dice` ORDER BY `die_id`"
         );
+        $result["ships"] = $this->getCollectionFromDb(
+            "SELECT `ship_id` `id`, `player_id`, `planet_id`, `track_progress` FROM `ships` ORDER BY `ship_id`"
+        );
   
         // Missions in player hand
         $missionCards = array_values($this->missionCards->getPlayerHand($current_player_id));

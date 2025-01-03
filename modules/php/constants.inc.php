@@ -19,6 +19,16 @@ const ST_END_SCORE = 98;
 const ST_END_GAME = 99;
 
 /*
+ * Dice faces
+ */
+const DICE_FACE_ENERGY = 1;
+const DICE_FACE_CULTURE = 2;
+const DICE_FACE_DIPLOMACY = 3;
+const DICE_FACE_ECONOMY = 4;
+const DICE_FACE_MOVE_SHIP = 5;
+const DICE_FACE_EMPIRE = 6;
+
+/*
  * Missions
  */
  const MISSION_CHARGER = "charger";
