@@ -73,6 +73,7 @@
     background-image: url('img/activationbay.png');
  }
 
+/*
  .galaxy-mat {
     width: 900px;
     height: 546px;
@@ -80,4 +81,64 @@
     background-size: auto 100%;
     z-index: 2;
 }
+*/
 
+.galaxy-mat {
+    border-style: solid;
+    border-width: 2px;
+}
+
+.ship-hangar {
+    display: flex;
+}
+
+.empire-track {
+    display: flex;
+}
+
+.ship-track {
+    display: flex;
+}
+
+.points-track {
+    display: flex;
+}
+
+.energy-culture-track {
+    display: flex;
+}
+
+.ships-hangar-slot {
+    width: 20px;
+    height: 20px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.empire-track-slot {
+    width: 20px;
+    height: 20px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.ship-track-slot {
+    width: 20px;
+    height: 20px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.points-track-slot {
+    width: 20px;
+    height: 20px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.energy-culture-track-slot {
+    width: 20px;
+    height: 20px;
+    border-style: solid;
+    border-width: 1px;
+}

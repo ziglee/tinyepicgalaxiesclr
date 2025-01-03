@@ -37,6 +37,18 @@ trait StateTrait {
         $this->gamestate->nextState("nextPlayer");
     }
 
+    function stDiceRoll() {
+        $this->resetDice();
+
+        // Retrieve the active player ID.
+        $player_id = (int)$this->getActivePlayerId();
+
+        $dice_count = $this->getPlayerDiceCount($player_id);
+        $this->rollDice($dice_count);
+
+        $this->gamestate->nextState("noDiceChoice"); 
+    }
+
     public function stEndScore() {
         // TODO
 

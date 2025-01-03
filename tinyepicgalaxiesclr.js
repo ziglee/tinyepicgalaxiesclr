@@ -68,7 +68,53 @@ function (dojo, declare) {
                 document.getElementById('player-tables').insertAdjacentHTML('beforeend', `
                     <div class="whiteblock" id="player-table-${player.id}">
                         <strong style="color:#${player.color};">${player.name}</strong>
-                        <div class="galaxy-mat" id="galaxy-mat-${player.id}"></div>
+                        <div class="galaxy-mat" id="galaxy-mat-${player.id}">
+                            <div class="ship-hangar" id="ships-hangar-${player.id}">
+                                Hangar
+                                <div class="ships-hangar-slot" id="ships-hangar-${player.id}-slot-1"></div>
+                                <div class="ships-hangar-slot" id="ships-hangar-${player.id}-slot-2"></div>
+                                <div class="ships-hangar-slot" id="ships-hangar-${player.id}-slot-3"></div>
+                                <div class="ships-hangar-slot" id="ships-hangar-${player.id}-slot-4"></div>
+                            </div>
+                            <div class="empire-track" id="empire-track-${player.id}">
+                                Empire
+                                <div class="empire-track-slot" id="empire-track-${player.id}-slot-1"></div>
+                                <div class="empire-track-slot" id="empire-track-${player.id}-slot-2">2</div>
+                                <div class="empire-track-slot" id="empire-track-${player.id}-slot-3">3</div>
+                                <div class="empire-track-slot" id="empire-track-${player.id}-slot-4">4</div>
+                                <div class="empire-track-slot" id="empire-track-${player.id}-slot-5">5</div>
+                                <div class="empire-track-slot" id="empire-track-${player.id}-slot-6">6</div>
+                            </div>
+                            <div class="ship-track" id="ship-track-${player.id}">
+                                Ships
+                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-1">2</div>
+                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-2">2</div>
+                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-3">3</div>
+                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-4">3</div>
+                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-5">4</div>
+                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-6">4</div>
+                            </div>
+                            <div class="points-track" id="points-track-${player.id}">
+                                Points
+                                <div class="points-track-slot" id="points-track-${player.id}-slot-1"></div>
+                                <div class="points-track-slot" id="points-track-${player.id}-slot-2">1</div>
+                                <div class="points-track-slot" id="points-track-${player.id}-slot-3">2</div>
+                                <div class="points-track-slot" id="points-track-${player.id}-slot-4">3</div>
+                                <div class="points-track-slot" id="points-track-${player.id}-slot-5">5</div>
+                                <div class="points-track-slot" id="points-track-${player.id}-slot-6">8</div>
+                            </div>
+                            <div class="energy-culture-track" id="energy-culture-track-${player.id}">
+                                Energy/Culture
+                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-0"></div>
+                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-1">1</div>
+                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-2">2</div>
+                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-3">3</div>
+                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-4">4</div>
+                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-5">5</div>
+                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-6">6</div>
+                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-7">7</div>
+                            </div>
+                        </div>
                         <div class="colonized-planets-row" id="colonized-planets-row-${player.id}">
                             <strong>Colonized planets row</strong>
                         </div>
@@ -78,6 +124,10 @@ function (dojo, declare) {
             
             // TODO: Set up your game interface here, according to "gamedatas"
             
+            Object.values(gamedatas.dice).forEach(die => {
+                
+            });
+
             // Missions to pick
             for (let i in gamedatas.missions) {
                 const mission = gamedatas.missions[i];

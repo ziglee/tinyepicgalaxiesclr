@@ -46,13 +46,7 @@ class Game extends \Table
         parent::__construct();
 
         $this->initGameStateLabels([
-            "die_1" => 11,
-            "die_2" => 12,
-            "die_3" => 13,
-            "die_4" => 14,
-            "die_5" => 15,
-            "die_6" => 16,
-            "die_7" => 17,
+            "free_roll_used" => 11,
         ]);
 
         $this->missionCards = $this->getNew("module.common.deck");
@@ -109,13 +103,7 @@ class Game extends \Table
         $this->reloadPlayersBasicInfos();
 
         // Init global values with their initial values.
-        $this->setGameStateInitialValue("die_1", 0);
-        $this->setGameStateInitialValue("die_2", 0);
-        $this->setGameStateInitialValue("die_3", 0);
-        $this->setGameStateInitialValue("die_4", 0);
-        $this->setGameStateInitialValue("die_5", 0);
-        $this->setGameStateInitialValue("die_6", 0);
-        $this->setGameStateInitialValue("die_7", 0);
+        $this->setGameStateInitialValue("free_roll_used", 0);
 
         $playerCount = count($players);
 
@@ -193,10 +181,13 @@ class Game extends \Table
         // Get information about players.
         // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
         $result["players"] = $this->getCollectionFromDb(
-            "SELECT `player_id` `id`, `player_score` `score` FROM `player`"
+            "SELECT `player_id` `id`, `player_score` `score`, `empire_level`, `energy_level`, `culture_level`, `dice_count` FROM `player`"
         );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
+        $result["dice"] = $this->getCollectionFromDb(
+            "SELECT `die_id` `id`, `face`, `used`, `converter` FROM `dice` ORDER BY `die_id`"
+        );
   
         // Missions in player hand
         $missionCards = array_values($this->missionCards->getPlayerHand($current_player_id));

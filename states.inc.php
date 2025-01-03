@@ -138,6 +138,15 @@ $gameGameStates = [
         ]
     ],
 
+    ST_DICE_ROLL => [
+        "name" => "diceRoll",
+        "description" => '',
+        "type" => "game",
+        "action" => "stDiceRoll",
+        "transitions" => [
+        ]
+    ],
+
     ST_END_SCORE => [
         "name" => "endScore",
         "description" => "",
