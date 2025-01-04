@@ -15,6 +15,16 @@
  *
  */
 
+ function updateDice(dice) {
+    dojo.empty('dice-buttons');
+    for (let dieId = 1; dieId <= 7; dieId++) {
+        const die = dice[dieId];
+        dojo.attr('die-slot-' + (die.id), 'data-face', die.face);
+        dojo.attr('die-slot-' + (die.id), 'data-used', die.used);
+        dojo.removeClass('die-slot-' + (die.id), 'die-active');
+    }
+ }
+
 define([
     "dojo","dojo/_base/declare",
     "ebg/core/gamegui",
@@ -69,11 +79,10 @@ function (dojo, declare) {
             `);
             
             // Set up your game interface here, according to "gamedatas"
-            for (let dieId = 1; dieId <= 7; dieId++) {
-                const die = gamedatas.dice[dieId];
-                dojo.attr('die-slot-' + (die.id), 'data-face', die.face);
-                dojo.attr('die-slot-' + (die.id), 'data-used', die.used);
-            }
+            updateDice(gamedatas.dice);
+            document.querySelectorAll('.die-slot').forEach(die => {
+                die.addEventListener('click', e => this.onDieClick(e));
+            });
 
             // Missions to choose
             if (gamedatas.missions) {
@@ -228,11 +237,6 @@ function (dojo, declare) {
            */
            
             case 'chooseAction':
-                document.querySelectorAll('.die-slot').forEach(die => {
-                    if (die.dataset.used == '0') {
-                        die.addEventListener('click', e => this.onDieClick(e));
-                    }
-                });
                 break;
             }
         },
@@ -352,6 +356,9 @@ function (dojo, declare) {
             // The click does nothing when not active
             if (!this.isCurrentPlayerActive()) return;
 
+            const used = dojo.attr(evt.currentTarget.id, 'data-used');
+            if (used == '1') return;
+
             dojo.toggleClass(evt.currentTarget.id, 'die-active');
 
             const ids = dojo.query('.die-active').map(function(node) { return node.id; });
@@ -363,6 +370,8 @@ function (dojo, declare) {
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
                     <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll die</span></a>
                 `);
+                const dieId = ids[0].split('-')[2];
+                document.getElementById('activate-die-btn').addEventListener('click', e => this.onActivateDieClick(dieId));
             } else if (ids.length == 2) {
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
                     <a href="#" id="my_button_id" class="bgabutton bgabutton_blue"><span>Convert die</span></a>
@@ -377,6 +386,16 @@ function (dojo, declare) {
             }
 
             console.log(ids);
+        },
+
+        onActivateDieClick: function(dieId) {
+            console.log('onActivateDieClick', dieId);
+            this.bgaPerformAction("actActivateDie", {
+                dieId: dieId,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
         },
 
         onPassClick: function() {
@@ -419,7 +438,7 @@ function (dojo, declare) {
             // 
         },  
         
-        // TODO: from this point and below, you can write your game notifications handling methods
+        // From this point and below, you can write your game notifications handling methods
         
         /*
         Example:
@@ -447,10 +466,7 @@ function (dojo, declare) {
         notif_diceUpdated: async function( notif )
         {
             console.log('notif_diceUpdated');
-            for (let dieId = 1; dieId <= 7; dieId++) {
-                const die = notif.dice[dieId];
-                dojo.attr('die-slot-' + (die.id), 'data-face', die.face);
-            }
+            updateDice(notif.dice);
         },
    });             
 });

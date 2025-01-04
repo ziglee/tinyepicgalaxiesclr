@@ -44,6 +44,10 @@ trait UtilTrait {
         return $this->getUniqueIntValueFromDB("SELECT IF(COUNT(*) > 0, TRUE, FALSE) AS rolled_unused_count FROM dice AS d WHERE d.used = 0 AND d.face <> 0");
     }
 
+    function useDie(int $dieId) {
+        $this->DbQuery("UPDATE dice SET used = true WHERE die_id = $dieId");
+    }
+
     function resetDice() {
         $this->DbQuery("UPDATE dice SET used = false, converter = false, face = 0");
     }

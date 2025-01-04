@@ -104,14 +104,13 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argChooseAction",
         "possibleactions" => [
-            // these actions are called from the front with bgaPerformAction, and matched to the function on the game.php file
             "actActivateDie", 
             "actRerollDice", 
             "actConvertDie",
             "actPass",
         ],
         "transitions" => [
-            "playCard" => ST_NEXT_PLAYER, 
+            "executeAction" => ST_PLAYER_CHOOSE_ACTION, 
             "pass" => ST_NEXT_PLAYER
         ]
     ],

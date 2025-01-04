@@ -29,9 +29,22 @@ trait ActionTrait {
         self::giveExtraTime($playerId);
     }
 
-    public function actActivateDie(): void
+    public function actActivateDie(int $dieId): void
     {
-        // TODO
+        $playerId = intval(self::getCurrentPlayerId());
+        self::giveExtraTime($playerId);
+
+        $this->useDie($dieId, false);
+
+        $this->notifyAllPlayers(
+            "diceUpdated", 
+            "", 
+            array(
+                'dice' => $this->getDice(),
+            ) 
+        );
+
+        $this->gamestate->nextState("executeAction");
     }
 
     public function actRerollDice(): void
