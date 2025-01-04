@@ -72,6 +72,7 @@ function (dojo, declare) {
                 const die = gamedatas.dice[dieId];
                 dojo.attr('die-slot-' + (die.id), 'data-face', die.face);
             }
+            document.querySelectorAll('.die-slot').forEach(die => die.addEventListener('click', e => this.onDieClick(e)));
 
             // Missions to choose
             if (gamedatas.missions) {
@@ -275,12 +276,12 @@ function (dojo, declare) {
                         );
                         break;
                     case 'chooseAction':
-                        this.addActionButton(`actChooseActionActivateDie-btn`, _('Activate die'), () => console.log('actChooseActionActivateDie-btn'));
+                        this.addActionButton(`actChooseActionActivateDie-btn`, _('Activate die'), () => this.onChooseActionActivateDieClick());
                         if (args.canFreeReroll || args.canReroll) {
-                            this.addActionButton(`actChooseActionRerollDie-btn`, _('Reroll dice'), () => console.log('actChooseActionRerollDie-btn'));
+                            this.addActionButton(`actChooseActionRerollDice-btn`, _('Reroll dice'), () => this.onChooseActionRerollDiceClick());
                         }
                         if (args.canConvert) {
-                            this.addActionButton(`actChooseActionConvertDie-btn`, _('Convert die'), () => console.log('actChooseActionConvertDie-btn'));
+                            this.addActionButton(`actChooseActionConvertDie-btn`, _('Convert die'), () => this.onChooseActionConvertDieClick());
                         }
                         break;
                 }
@@ -334,7 +335,37 @@ function (dojo, declare) {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)
             });        
-        },    
+        },
+
+        onDieClick: function( evt )
+        {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // The click does nothing when not active
+            if (!this.isCurrentPlayerActive()) return;
+
+            dojo.toggleClass(evt.currentTarget.id, 'die-active');
+        },
+        
+        onChooseActionActivateDieClick: function()
+        {
+            console.log( 'onChooseActionActivateDieClick' );
+            // TODO
+        },
+
+        onChooseActionRerollDiceClick: function()
+        {
+            console.log( 'onChooseActionRerollDiceClick' );
+            // TODO
+        },
+
+        onChooseActionConvertDieClick: function()
+        {
+            console.log( 'onChooseActionConvertDieClick' );
+            // TODO
+        },
 
         
         ///////////////////////////////////////////////////

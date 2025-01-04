@@ -31,5 +31,4 @@ trait ArgsTrait {
             "canConvert" => $this->getUniqueIntValueFromDB("SELECT COUNT(`die_id`) FROM `dice` WHERE `face` <> '0' AND `used` = FALSE") >= 2,
         ];
     }
-
 }
