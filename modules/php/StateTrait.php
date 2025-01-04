@@ -38,6 +38,8 @@ trait StateTrait {
         // TODO: check score
         //$this->gamestate->nextState("endScore");
         
+        
+        $this->setGameStateValue("free_roll_used", 0);
         $this->resetDice();
 
         $player_id = intval($this->activeNextPlayer());

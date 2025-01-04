@@ -268,12 +268,21 @@ function (dojo, declare) {
             {            
                 switch( stateName )
                 {
-                 case 'privateChooseMission':    
-                    const missions = args.missions; // returned by the argPrivateChooseMission
-                    missions.forEach(
-                        mission => this.addActionButton(`actChooseMission${mission.id}-btn`, _('Choose mission ${mission}').replace('${mission}', mission.type), () => this.onChooseMissionClick(mission.id)) 
-                    );
-                    break;
+                    case 'privateChooseMission':
+                        const missions = args.missions; // returned by the argPrivateChooseMission
+                        missions.forEach(
+                            mission => this.addActionButton(`actChooseMission${mission.id}-btn`, _('Choose mission ${mission}').replace('${mission}', mission.type), () => this.onChooseMissionClick(mission.id)) 
+                        );
+                        break;
+                    case 'chooseAction':
+                        this.addActionButton(`actChooseActionActivateDie-btn`, _('Activate die'), () => console.log('actChooseActionActivateDie-btn'));
+                        if (args.canFreeReroll || args.canReroll) {
+                            this.addActionButton(`actChooseActionRerollDie-btn`, _('Reroll dice'), () => console.log('actChooseActionRerollDie-btn'));
+                        }
+                        if (args.canConvert) {
+                            this.addActionButton(`actChooseActionConvertDie-btn`, _('Convert die'), () => console.log('actChooseActionConvertDie-btn'));
+                        }
+                        break;
                 }
             }
         },        
