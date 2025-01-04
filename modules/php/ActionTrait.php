@@ -8,7 +8,8 @@ trait ActionTrait {
     //////////// Player actions
     //////////// 
 
-    public function actChooseMission(int $selectedMissionId) {
+    public function actChooseMission(int $selectedMissionId): void 
+    {
         $playerId = intval(self::getCurrentPlayerId());
 
         $missionCards = $this->missionCards->getPlayerHand($playerId);
@@ -26,6 +27,21 @@ trait ActionTrait {
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
         self::giveExtraTime($playerId);
+    }
+
+    public function actActivateDie(): void
+    {
+        // TODO
+    }
+
+    public function actRerollDice(): void
+    {
+        // TODO
+    }
+
+    public function actConvertDie(): void
+    {
+        // TODO
     }
 
     public function actPlayCard(int $card_id): void

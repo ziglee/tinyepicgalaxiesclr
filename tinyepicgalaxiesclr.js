@@ -53,13 +53,14 @@ function (dojo, declare) {
                 <div id="missions-to-choose"></div>
                 <div class="whiteblock" id="dice-tray">
                     <strong>Dice tray</strong>
-                    <div class="die-slot" id="die-slot-1" data-face="0"></div>
-                    <div class="die-slot" id="die-slot-2" data-face="0"></div>
-                    <div class="die-slot" id="die-slot-3" data-face="0"></div>
-                    <div class="die-slot" id="die-slot-4" data-face="0"></div>
-                    <div class="die-slot" id="die-slot-5" data-face="0"></div>
-                    <div class="die-slot" id="die-slot-6" data-face="0"></div>
-                    <div class="die-slot" id="die-slot-7" data-face="0"></div>
+                    <div class="die-slot" id="die-slot-1" data-face="0" data-used="0"></div>
+                    <div class="die-slot" id="die-slot-2" data-face="0" data-used="0"></div>
+                    <div class="die-slot" id="die-slot-3" data-face="0" data-used="0"></div>
+                    <div class="die-slot" id="die-slot-4" data-face="0" data-used="0"></div>
+                    <div class="die-slot" id="die-slot-5" data-face="0" data-used="0"></div>
+                    <div class="die-slot" id="die-slot-6" data-face="0" data-used="0"></div>
+                    <div class="die-slot" id="die-slot-7" data-face="0" data-used="0"></div>
+                    <div id="dice-buttons"></div>
                 </div>
                 <div class="whiteblock" id="planet-cards-row">
                 </div>
@@ -71,8 +72,8 @@ function (dojo, declare) {
             for (let dieId = 1; dieId <= 7; dieId++) {
                 const die = gamedatas.dice[dieId];
                 dojo.attr('die-slot-' + (die.id), 'data-face', die.face);
+                dojo.attr('die-slot-' + (die.id), 'data-used', die.used);
             }
-            document.querySelectorAll('.die-slot').forEach(die => die.addEventListener('click', e => this.onDieClick(e)));
 
             // Missions to choose
             if (gamedatas.missions) {
@@ -226,8 +227,12 @@ function (dojo, declare) {
                 break;
            */
            
-           
-            case 'dummy':
+            case 'chooseAction':
+                document.querySelectorAll('.die-slot').forEach(die => {
+                    if (die.dataset.used == '0') {
+                        die.addEventListener('click', e => this.onDieClick(e));
+                    }
+                });
                 break;
             }
         },
@@ -276,13 +281,14 @@ function (dojo, declare) {
                         );
                         break;
                     case 'chooseAction':
-                        this.addActionButton(`actChooseActionActivateDie-btn`, _('Activate die'), () => this.onChooseActionActivateDieClick());
-                        if (args.canFreeReroll || args.canReroll) {
-                            this.addActionButton(`actChooseActionRerollDice-btn`, _('Reroll dice'), () => this.onChooseActionRerollDiceClick());
-                        }
-                        if (args.canConvert) {
-                            this.addActionButton(`actChooseActionConvertDie-btn`, _('Convert die'), () => this.onChooseActionConvertDieClick());
-                        }
+                        this.addActionButton(`actPass-btn`, _('Pass'), () => this.onPassClick());
+                        // this.addActionButton(`actChooseActionActivateDie-btn`, _('Activate die'), () => this.onChooseActionActivateDieClick());
+                        // if (args.canFreeReroll || args.canReroll) {
+                        //     this.addActionButton(`actChooseActionRerollDice-btn`, _('Reroll dice'), () => this.onChooseActionRerollDiceClick());
+                        // }
+                        // if (args.canConvert) {
+                        //     this.addActionButton(`actChooseActionConvertDie-btn`, _('Convert die'), () => this.onChooseActionConvertDieClick());
+                        // }
                         break;
                 }
             }
@@ -334,7 +340,7 @@ function (dojo, declare) {
             }).then(() =>  {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)
-            });        
+            });
         },
 
         onDieClick: function( evt )
@@ -347,24 +353,37 @@ function (dojo, declare) {
             if (!this.isCurrentPlayerActive()) return;
 
             dojo.toggleClass(evt.currentTarget.id, 'die-active');
-        },
-        
-        onChooseActionActivateDieClick: function()
-        {
-            console.log( 'onChooseActionActivateDieClick' );
-            // TODO
+
+            const ids = dojo.query('.die-active').map(function(node) { return node.id; });
+            dojo.empty('dice-buttons');
+            if (ids.length == 1) {
+                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                    <a href="#" id="activate-die-btn" class="bgabutton bgabutton_blue"><span>Activate die</span></a>
+                `);
+                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                    <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll die</span></a>
+                `);
+            } else if (ids.length == 2) {
+                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                    <a href="#" id="my_button_id" class="bgabutton bgabutton_blue"><span>Convert die</span></a>
+                `);
+                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                    <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
+                `);
+            } else if (ids.length > 2) {
+                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                    <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
+                `);
+            }
+
+            console.log(ids);
         },
 
-        onChooseActionRerollDiceClick: function()
-        {
-            console.log( 'onChooseActionRerollDiceClick' );
-            // TODO
-        },
-
-        onChooseActionConvertDieClick: function()
-        {
-            console.log( 'onChooseActionConvertDieClick' );
-            // TODO
+        onPassClick: function() {
+            this.bgaPerformAction("actPass", {}).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
         },
 
         

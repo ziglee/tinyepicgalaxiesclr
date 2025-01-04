@@ -99,13 +99,15 @@ $playerActionsGameStates = [
 
     ST_PLAYER_CHOOSE_ACTION => [
         "name" => "chooseAction",
-        "description" => clienttranslate('${actplayer} must activate a die, reroll or convert dice'), 
-        "descriptionmyturn" => clienttranslate('${you} must activate a die, reroll or convert dice'),
+        "description" => clienttranslate('${actplayer} must select one or more dice'), 
+        "descriptionmyturn" => clienttranslate('${you} must select one or more dice'),
         "type" => "activeplayer",
         "args" => "argChooseAction",
         "possibleactions" => [
             // these actions are called from the front with bgaPerformAction, and matched to the function on the game.php file
-            "actPlayCard", 
+            "actActivateDie", 
+            "actRerollDice", 
+            "actConvertDie",
             "actPass",
         ],
         "transitions" => [
