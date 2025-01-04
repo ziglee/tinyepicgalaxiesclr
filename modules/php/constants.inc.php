@@ -20,12 +20,12 @@ const ST_END_GAME = 99;
 /*
  * Dice faces
  */
-const DICE_FACE_ENERGY = 1;
-const DICE_FACE_CULTURE = 2;
-const DICE_FACE_DIPLOMACY = 3;
-const DICE_FACE_ECONOMY = 4;
-const DICE_FACE_MOVE_SHIP = 5;
-const DICE_FACE_EMPIRE = 6;
+const DICE_FACE_MOVE_SHIP = 1;
+const DICE_FACE_ENERGY = 2;
+const DICE_FACE_EMPIRE = 3;
+const DICE_FACE_CULTURE = 4;
+const DICE_FACE_ECONOMY = 5;
+const DICE_FACE_DIPLOMACY = 6;
 
 /*
  * Missions

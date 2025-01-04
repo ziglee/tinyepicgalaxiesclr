@@ -16,6 +16,9 @@ trait ActionTrait {
             if ($missionId == $selectedMissionId) {
                 $type = $missionCard['type'];
                 $this->DbQuery("UPDATE player SET mission = '$type' WHERE player_id = '$playerId'");
+                $this->notifyPlayer($playerId, 'missionChoosed', \clienttranslate('You selected mission ${mission}'), [
+                    "mission" => $type,
+                ]);
             } else {
                 $this->missionCards->playCard($missionId);
             }

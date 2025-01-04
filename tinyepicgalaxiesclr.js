@@ -50,19 +50,18 @@ function (dojo, declare) {
 
             // Example to add a div on the game area
             document.getElementById('game_play_area').insertAdjacentHTML('beforeend', `
-                <div id="missions-to-pick"></div>
+                <div id="missions-to-choose"></div>
                 <div class="whiteblock" id="dice-tray">
                     <strong>Dice tray</strong>
-                    <div class="die-slot" id="die-slot-1"></div>
-                    <div class="die-slot" id="die-slot-2"></div>
-                    <div class="die-slot" id="die-slot-3"></div>
-                    <div class="die-slot" id="die-slot-4"></div>
-                    <div class="die-slot" id="die-slot-5"></div>
-                    <div class="die-slot" id="die-slot-6"></div>
-                    <div class="die-slot" id="die-slot-7"></div>
+                    <div class="die-slot" id="die-slot-1" data-face="0"></div>
+                    <div class="die-slot" id="die-slot-2" data-face="0"></div>
+                    <div class="die-slot" id="die-slot-3" data-face="0"></div>
+                    <div class="die-slot" id="die-slot-4" data-face="0"></div>
+                    <div class="die-slot" id="die-slot-5" data-face="0"></div>
+                    <div class="die-slot" id="die-slot-6" data-face="0"></div>
+                    <div class="die-slot" id="die-slot-7" data-face="0"></div>
                 </div>
                 <div class="whiteblock" id="planet-cards-row">
-                    <strong>Planet cards row</strong>
                 </div>
                 <div id="activation-bay"></div>
                 <div id="player-tables"></div>
@@ -71,24 +70,27 @@ function (dojo, declare) {
             // Set up your game interface here, according to "gamedatas"
             for (let dieId = 1; dieId <= 7; dieId++) {
                 const die = gamedatas.dice[dieId];
-                $('die-slot-' + (die.id)).innerHTML = die.face;
+                dojo.attr('die-slot-' + (die.id), 'data-face', die.face);
             }
 
-            // Missions to pick
-            for (let i in gamedatas.missions) {
-                const mission = gamedatas.missions[i];
-                document.getElementById('missions-to-pick').insertAdjacentHTML('beforeend', `
-                    <div id="mission-to-pick-${mission.id}">
-                        <div>${mission.type}</div>
-                    </div>
-                `);
+            // Missions to choose
+            if (gamedatas.missions) {
+                for (let i in gamedatas.missions) {
+                    const mission = gamedatas.missions[i];
+                    document.getElementById('missions-to-choose').insertAdjacentHTML('beforeend', `
+                        <div class="mission-card-to-choose" id="missioncardtochoose-${mission.id}">
+                            <div>${mission.type}</div>
+                        </div>
+                    `);
+                }
+                document.querySelectorAll('.mission-card-to-choose').forEach(mission => mission.addEventListener('click', e => this.onMissionCartToChooseClick(e)));
             }
             
             // Planets on center row
             for (let i in gamedatas.centerrow) {
                 const planet = gamedatas.centerrow[i];
                 document.getElementById('planet-cards-row').insertAdjacentHTML('beforeend', `
-                    <div id="planet-${planet.id}">
+                    <div class="planet-card" id="planet-${planet.id}">
                         <div>${planet.info.name} ${planet.type} (Points ${planet.info.pointsWorth})</div>
                         <div class="planet-track" id="planet-track-${planet.id}"></div>
                     </div>
@@ -122,7 +124,7 @@ function (dojo, declare) {
                             </div>
                             <div class="empire-track" id="empire-track-${player.id}">
                                 Empire
-                                <div class="empire-track-slot" id="empire-track-${player.id}-slot-1"></div>
+                                <div class="empire-track-slot" id="empire-track-${player.id}-slot-1">0</div>
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-2">2</div>
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-3">3</div>
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-4">4</div>
@@ -140,7 +142,7 @@ function (dojo, declare) {
                             </div>
                             <div class="points-track" id="points-track-${player.id}">
                                 Points
-                                <div class="points-track-slot" id="points-track-${player.id}-slot-1"></div>
+                                <div class="points-track-slot" id="points-track-${player.id}-slot-1">0</div>
                                 <div class="points-track-slot" id="points-track-${player.id}-slot-2">1</div>
                                 <div class="points-track-slot" id="points-track-${player.id}-slot-3">2</div>
                                 <div class="points-track-slot" id="points-track-${player.id}-slot-4">3</div>
@@ -149,7 +151,7 @@ function (dojo, declare) {
                             </div>
                             <div class="energy-culture-track" id="energy-culture-track-${player.id}">
                                 Energy/Culture
-                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-0"></div>
+                                <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-0">0</div>
                                 <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-1">1</div>
                                 <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-2">2</div>
                                 <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-3">3</div>
@@ -164,6 +166,19 @@ function (dojo, declare) {
                         </div>
                     </div>
                 `);
+
+                document.getElementById(`energy-culture-track-${player.id}-slot-${player.energy_level}`).insertAdjacentHTML(
+                    'beforeend', 
+                    `<div class="energy-token" data-color="${player.color}" id="energy-token-${player.id}">EN</div>`
+                );
+                document.getElementById(`energy-culture-track-${player.id}-slot-${player.culture_level}`).insertAdjacentHTML(
+                    'beforeend', 
+                    `<div class="culture-token" data-color="${player.color}" id="culture-token-${player.id}">CU</div>`
+                );
+                document.getElementById(`empire-track-${player.id}-slot-${player.empire_level}`).insertAdjacentHTML(
+                    'beforeend', 
+                    `<div class="empire-token" data-color="${player.color}" id="empire-token-${player.id}">EM</div>`
+                );
             });
 
             // Colonized planets in player's area
@@ -174,7 +189,7 @@ function (dojo, declare) {
             Object.values(gamedatas.ships).forEach(ship => {
                 if (ship.planet_id == null) {
                     document.getElementById(`ships-hangar-${ship.player_id}`).insertAdjacentHTML('beforeend', `
-                        <div class="ships-hangar-slot" id="ship-${ship.id}">${ship.id}</div>
+                        <div class="ships-hangar-slot" id="ship-${ship.id}">S-${ship.id}</div>
                     `);
                 }
                 console.log(ship);
@@ -287,7 +302,19 @@ function (dojo, declare) {
             _ make a call to the game server
         
         */
-        
+        onMissionCartToChooseClick: function( evt )
+        {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // The click does nothing when not active
+            if (!this.isCurrentPlayerActive()) return;
+
+            const missionId = evt.currentTarget.id.split('-')[1];
+            this.onChooseMissionClick(missionId);
+        },
+
         onChooseMissionClick: function( missionId )
         {
             console.log( 'onChooseMissionClick', missionId );
@@ -350,12 +377,20 @@ function (dojo, declare) {
         
         */
 
+        notif_missionChoosed: async function( notif )
+        {
+            console.log('notif_missionChoosed');
+            console.log( notif );
+
+            dojo.destroy('missions-to-choose');
+        },
+
         notif_diceUpdated: async function( notif )
         {
             console.log('notif_diceUpdated');
             for (let dieId = 1; dieId <= 7; dieId++) {
                 const die = notif.dice[dieId];
-                $('die-slot-' + (die.id)).innerHTML = die.face;
+                dojo.attr('die-slot-' + (die.id), 'data-face', die.face);
             }
         },
    });             

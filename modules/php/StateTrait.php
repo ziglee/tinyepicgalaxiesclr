@@ -38,15 +38,11 @@ trait StateTrait {
         // TODO: check score
         //$this->gamestate->nextState("endScore");
         
-        $player_id = intval($this->activeNextPlayer());
-
         $this->resetDice();
+
+        $player_id = intval($this->activeNextPlayer());
         $dice_count = $this->getPlayerDiceCount($player_id);
         $this->rollDice($dice_count);
-
-        $dice = $this->getCollectionFromDb(
-            "SELECT `die_id` `id`, `face`, `used`, `converter` FROM `dice` ORDER BY `die_id`"
-        );
 
         $this->notifyAllPlayers(
             "diceUpdated", 
@@ -54,7 +50,7 @@ trait StateTrait {
             array(
                 'player_id' => $player_id,
                 'player_name' => $this->getActivePlayerName(),
-                'dice' => $dice,
+                'dice' => $this->getDice(),
             ) 
         );
 

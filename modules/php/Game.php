@@ -185,9 +185,7 @@ class Game extends \Table
         );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
-        $result["dice"] = $this->getCollectionFromDb(
-            "SELECT `die_id` `id`, `face`, `used`, `converter` FROM `dice` ORDER BY `die_id`"
-        );
+        $result["dice"] = $this->getDice();
         $result["ships"] = $this->getCollectionFromDb(
             "SELECT `ship_id` `id`, `player_id`, `planet_id`, `track_progress` FROM `ships` ORDER BY `ship_id`"
         );

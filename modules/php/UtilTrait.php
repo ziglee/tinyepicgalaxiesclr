@@ -30,6 +30,12 @@ trait UtilTrait {
         return $this->getUniqueIntValueFromDB("SELECT dice_count FROM player where `player_id` = $playerId");
     }
 
+    function getDice() {
+        return $this->getCollectionFromDb(
+            "SELECT `die_id` `id`, `face`, `used`, `converter` FROM `dice` ORDER BY `die_id`"
+        );
+    }
+
     function getPlanetsFromDb(array $dbObjects) {
         return array_map(fn($dbObject) => new \PlanetCard($dbObject), array_values($dbObjects));
     }
