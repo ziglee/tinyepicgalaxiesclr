@@ -58,4 +58,11 @@ trait UtilTrait {
             $this->DbQuery("UPDATE dice SET face = $face WHERE die_id = $x");
         }
     }
+
+    function rollDiceIds(array $ids) {
+        foreach ($ids as $dieId) {
+            $face = \bga_rand(1, 6);
+            $this->DbQuery("UPDATE dice SET face = $face WHERE die_id = $dieId");
+        }
+    }
 }

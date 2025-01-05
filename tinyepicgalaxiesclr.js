@@ -361,7 +361,9 @@ function (dojo, declare) {
 
             dojo.toggleClass(evt.currentTarget.id, 'die-active');
 
-            const ids = dojo.query('.die-active').map(function(node) { return node.id; });
+            const ids = dojo.query('.die-active').map(function(node) { 
+                return node.id.split('-')[2]; 
+            });
             dojo.empty('dice-buttons');
             if (ids.length == 1) {
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
@@ -370,8 +372,8 @@ function (dojo, declare) {
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
                     <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll die</span></a>
                 `);
-                const dieId = ids[0].split('-')[2];
-                document.getElementById('activate-die-btn').addEventListener('click', e => this.onActivateDieClick(dieId));
+                document.getElementById('activate-die-btn').addEventListener('click', e => this.onActivateDieClick(ids[0]));
+                document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
             } else if (ids.length == 2) {
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
                     <a href="#" id="my_button_id" class="bgabutton bgabutton_blue"><span>Convert die</span></a>
@@ -392,6 +394,16 @@ function (dojo, declare) {
             console.log('onActivateDieClick', dieId);
             this.bgaPerformAction("actActivateDie", {
                 dieId: dieId,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
+        onRerollDiceClick: function(ids) {
+            console.log('onRerollDiceClick', ids);
+            this.bgaPerformAction("actRerollDice", {
+                ids: ids,
             }).then(() =>  {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)
@@ -457,16 +469,28 @@ function (dojo, declare) {
 
         notif_missionChoosed: async function( notif )
         {
-            console.log('notif_missionChoosed');
-            console.log( notif );
-
+            console.log('notif_missionChoosed', notif);
             dojo.destroy('missions-to-choose');
         },
 
         notif_diceUpdated: async function( notif )
         {
-            console.log('notif_diceUpdated');
+            console.log('notif_diceUpdated', notif);
             updateDice(notif.dice);
+        },
+
+        notif_freeRerollWasUsed: async function( notif )
+        {
+            console.log('notif_freeRerollWasUsed', notif);
+        },
+
+        notif_energyLevelChanged: async function( notif )
+        {
+            console.log('notif_energyLevelChanged', notif);
+            const player_id = notif.player_id;
+            const new_energy_level = notif.new_energy_level;
+            const anim = this.slideToObject(`energy-token-${player_id}`, `energy-culture-track-${player_id}-slot-${new_energy_level}`);
+            await this.bgaPlayDojoAnimation(anim);
         },
    });             
 });

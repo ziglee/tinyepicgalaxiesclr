@@ -190,8 +190,13 @@
 }
 
 .energy-culture-track-slot {
+    position: relative;
     width: 40px;
     height: 40px;
     border-style: solid;
     border-width: 1px;
+}
+
+.energy-token {
+    position: absolute;
 }
