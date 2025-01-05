@@ -46,6 +46,7 @@ trait ActionTrait {
             ) 
         );
 
+        // TODO check die face and choose nextState accordingly
         $this->gamestate->nextState("executeAction");
     }
 
@@ -73,7 +74,7 @@ trait ActionTrait {
             "", 
             array(
                 'dice' => $this->getDice(),
-            ) 
+            )
         );
 
         if ($freeRollUsed == 0) {
@@ -95,45 +96,41 @@ trait ActionTrait {
         $this->gamestate->nextState("executeAction");
     }
 
-    public function actConvertDie(): void
+    public function actSelectConverterDice(int $die1id, int $die2id): void
     {
-        // TODO
-        
-        $this->gamestate->nextState("executeAction");
+        $this->useDieAsConverter($die1id, $die2id);
+
+        $this->notifyAllPlayers(
+            "diceUpdated", 
+            "", 
+            array(
+                'dice' => $this->getDice(),
+            )
+        );
+
+        $this->gamestate->nextState("selectNewDieFace");
     }
 
-    public function actPlayCard(int $card_id): void
+    public function actConvertDie(int $dieId, int $newFace): void
     {
-        // Retrieve the active player ID.
-        $player_id = (int)$this->getActivePlayerId();
+        $this->updateDieFace($dieId, $newFace);
 
-        // check input values
-        $args = $this->argPlayerTurn();
-        $playableCardsIds = $args['playableCardsIds'];
-        if (!in_array($card_id, $playableCardsIds)) {
-            throw new \BgaUserException('Invalid card choice');
-        }
-
-        // Add your game logic to play a card here.
-        //$card_name = self::$CARD_TYPES[$card_id]['card_name'];
-
-        // Notify all players about the card played.
-        // $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} plays ${card_name}'), [
-        //     "player_id" => $player_id,
-        //     "player_name" => $this->getActivePlayerName(),
-        //     "card_name" => $card_name,
-        //     "card_id" => $card_id,
-        //     "i18n" => ['card_name'],
-        // ]);
-
-        // at the end of the action, move to the next state
-        $this->gamestate->nextState("playCard");
+        $this->notifyAllPlayers(
+            "diceUpdated", 
+            "", 
+            array(
+                'dice' => $this->getDice(),
+            )
+        );
+        
+        $this->gamestate->nextState("");
     }
 
     public function actPass(): void
     {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
+        self::giveExtraTime($player_id);
 
         // Notify all players about the choice to pass.
         $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} passes'), [

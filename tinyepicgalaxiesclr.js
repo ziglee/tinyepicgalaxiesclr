@@ -23,6 +23,15 @@
         dojo.attr('die-slot-' + (die.id), 'data-used', die.used);
         dojo.removeClass('die-slot-' + (die.id), 'die-active');
     }
+    dojo.empty('dice-face-selection-tray');
+    for (let dieId = 1; dieId <= 7; dieId++) {
+        const die = dice[dieId];
+        if (die.used == '0' && die.face != '0') {
+            document.getElementById('dice-face-selection-tray').insertAdjacentHTML('beforeend', `
+                <div class="die-convert-slot die-face" id="die-convert-slot-${die.id}" data-face="${die.face}" data-used="0"></div>
+            `);
+        }
+    }
  }
 
 define([
@@ -63,14 +72,27 @@ function (dojo, declare) {
                 <div id="missions-to-choose"></div>
                 <div class="whiteblock" id="dice-tray">
                     <strong>Dice tray</strong>
-                    <div class="die-slot" id="die-slot-1" data-face="0" data-used="0"></div>
-                    <div class="die-slot" id="die-slot-2" data-face="0" data-used="0"></div>
-                    <div class="die-slot" id="die-slot-3" data-face="0" data-used="0"></div>
-                    <div class="die-slot" id="die-slot-4" data-face="0" data-used="0"></div>
-                    <div class="die-slot" id="die-slot-5" data-face="0" data-used="0"></div>
-                    <div class="die-slot" id="die-slot-6" data-face="0" data-used="0"></div>
-                    <div class="die-slot" id="die-slot-7" data-face="0" data-used="0"></div>
+                    <div class="die-slot die-face" id="die-slot-1" data-face="0" data-used="0"></div>
+                    <div class="die-slot die-face" id="die-slot-2" data-face="0" data-used="0"></div>
+                    <div class="die-slot die-face" id="die-slot-3" data-face="0" data-used="0"></div>
+                    <div class="die-slot die-face" id="die-slot-4" data-face="0" data-used="0"></div>
+                    <div class="die-slot die-face" id="die-slot-5" data-face="0" data-used="0"></div>
+                    <div class="die-slot die-face" id="die-slot-6" data-face="0" data-used="0"></div>
+                    <div class="die-slot die-face" id="die-slot-7" data-face="0" data-used="0"></div>
                     <div id="dice-buttons"></div>
+                </div>
+                <div class="whiteblock" id="dice-face-selection" style="display: none;">
+                    <strong>Choose die to convert</strong>
+                    <div id="dice-face-selection-tray" style="display: flex;"></div>
+                    <strong>Choose new face</strong>
+                    <div id="dice-face-selection-options">
+                        <div class="die-newface die-face" data-face="1"></div>
+                        <div class="die-newface die-face" data-face="2"></div>
+                        <div class="die-newface die-face" data-face="3"></div>
+                        <div class="die-newface die-face" data-face="4"></div>
+                        <div class="die-newface die-face" data-face="5"></div>
+                        <div class="die-newface die-face" data-face="6"></div>
+                    </div>
                 </div>
                 <div class="whiteblock" id="planet-cards-row">
                 </div>
@@ -82,6 +104,12 @@ function (dojo, declare) {
             updateDice(gamedatas.dice);
             document.querySelectorAll('.die-slot').forEach(die => {
                 die.addEventListener('click', e => this.onDieClick(e));
+            });
+            document.querySelectorAll('.die-convert-slot').forEach(die => {
+                die.addEventListener('click', e => this.onDieToConvertClick(e));
+            });
+            document.querySelectorAll('.die-newface').forEach(die => {
+                die.addEventListener('click', e => this.onDieNewFaceClick(e));
             });
 
             // Missions to choose
@@ -141,24 +169,6 @@ function (dojo, declare) {
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-4">4</div>
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-5">5</div>
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-6">6</div>
-                            </div>
-                            <div class="ship-track" id="ship-track-${player.id}">
-                                Ships
-                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-1">2</div>
-                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-2">2</div>
-                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-3">3</div>
-                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-4">3</div>
-                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-5">4</div>
-                                <div class="ship-track-slot" id="ship-track-${player.id}-slot-6">4</div>
-                            </div>
-                            <div class="points-track" id="points-track-${player.id}">
-                                Points
-                                <div class="points-track-slot" id="points-track-${player.id}-slot-1">0</div>
-                                <div class="points-track-slot" id="points-track-${player.id}-slot-2">1</div>
-                                <div class="points-track-slot" id="points-track-${player.id}-slot-3">2</div>
-                                <div class="points-track-slot" id="points-track-${player.id}-slot-4">3</div>
-                                <div class="points-track-slot" id="points-track-${player.id}-slot-5">5</div>
-                                <div class="points-track-slot" id="points-track-${player.id}-slot-6">8</div>
                             </div>
                             <div class="energy-culture-track" id="energy-culture-track-${player.id}">
                                 Energy/Culture
@@ -225,18 +235,9 @@ function (dojo, declare) {
             
             switch( stateName )
             {
-            
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-                
-                break;
-           */
-           
-            case 'chooseAction':
+            case 'convertDie':
+                dojo.style( 'dice-tray', 'display', 'none' );
+                dojo.style( 'dice-face-selection', 'display', 'block' );
                 break;
             }
         },
@@ -250,19 +251,9 @@ function (dojo, declare) {
             
             switch( stateName )
             {
-            
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
-                
-                break;
-           */
-           
-           
-            case 'dummy':
+            case 'convertDie':
+                dojo.style( 'dice-tray', 'display', 'flex' );
+                dojo.style( 'dice-face-selection', 'display', 'none' );
                 break;
             }               
         }, 
@@ -376,18 +367,53 @@ function (dojo, declare) {
                 document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
             } else if (ids.length == 2) {
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                    <a href="#" id="my_button_id" class="bgabutton bgabutton_blue"><span>Convert die</span></a>
+                    <a href="#" id="convert-dice-btn" class="bgabutton bgabutton_blue"><span>Convert die</span></a>
                 `);
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
                     <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
                 `);
+                document.getElementById('convert-dice-btn').addEventListener('click', e => this.onSelectConverterDiceClick(ids[0], ids[1]));
+                document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
             } else if (ids.length > 2) {
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
                     <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
                 `);
+                document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
             }
+        },
 
-            console.log(ids);
+        onDieToConvertClick: function(evt) {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // The click does nothing when not active
+            if (!this.isCurrentPlayerActive()) return;
+
+            dojo.query('.die-convert-active').forEach(die => dojo.removeClass(die.id, 'die-convert-active'));
+            dojo.toggleClass(evt.currentTarget.id, 'die-convert-active');
+        },
+
+        onDieNewFaceClick: function(evt) {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // The click does nothing when not active
+            if (!this.isCurrentPlayerActive()) return;
+
+            const dieToConvert = dojo.query('.die-convert-active');
+            if(dieToConvert.length == 0) return;
+            
+            const dieId = dieToConvert[0].id.split('-')[3];
+            const newFace = evt.currentTarget.dataset.face;
+            this.bgaPerformAction("actConvertDie", {
+                dieId: dieId,
+                newFace: newFace,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
         },
 
         onActivateDieClick: function(dieId) {
@@ -404,6 +430,17 @@ function (dojo, declare) {
             console.log('onRerollDiceClick', ids);
             this.bgaPerformAction("actRerollDice", {
                 ids: ids,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
+        onSelectConverterDiceClick: function(die1id, die2id) {
+            console.log('onSelectConverterDiceClick', die1id, die2id);
+            this.bgaPerformAction("actSelectConverterDice", {
+                die1id: die1id,
+                die2id: die2id,
             }).then(() =>  {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)

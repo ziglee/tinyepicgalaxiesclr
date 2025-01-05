@@ -91,11 +91,29 @@
     display: flex;
 }
 
-.die-slot {
+#dice-face-selection-options {
+    display: flex;
+}
+
+.die-face {
+    margin: 2px;
     width: 50px;
     height: 50px;
     background-image: url('img/diefaces.png');
-    margin: 2px;
+}
+
+.die-slot {
+    cursor: pointer;
+    border-style: solid;
+    border-width: 2px;
+    border-color: white;
+}
+
+.die-newface {
+    cursor: pointer;
+}
+
+.die-convert-slot {
     cursor: pointer;
     border-style: solid;
     border-width: 2px;
@@ -107,22 +125,29 @@
     width: 0px;
     height: 0px;
  }
-.die-slot[data-face="1"] { background-position-x: 0px; }
-.die-slot[data-face="2"] { background-position-x: -50px; }
-.die-slot[data-face="3"] { background-position-x: -100px; }
-.die-slot[data-face="4"] { background-position-x: -150px; }
-.die-slot[data-face="5"] { background-position-x: -200px; }
-.die-slot[data-face="6"] { background-position-x: -250px; }
-.die-slot[data-used="1"] { 
-    cursor: not-allowed; 
-    border-color: gray;
-    box-shadow: inset 0 0 0 1000px rgba(255,255,255,.6)
-}
+ .die-slot[data-used="1"] { 
+     cursor: not-allowed; 
+     border-color: gray;
+     box-shadow: inset 0 0 0 1000px rgba(255,255,255,.6)
+ }
+
+.die-face[data-face="1"] { background-position-x: 0px; }
+.die-face[data-face="2"] { background-position-x: -50px; }
+.die-face[data-face="3"] { background-position-x: -100px; }
+.die-face[data-face="4"] { background-position-x: -150px; }
+.die-face[data-face="5"] { background-position-x: -200px; }
+.die-face[data-face="6"] { background-position-x: -250px; }
 
 .die-active {
     border-style: solid;
     border-width: 2px;
-    border-color: red;
+    border-color: blue;
+}
+
+.die-convert-active {
+    border-style: solid;
+    border-width: 2px;
+    border-color: blue;
 }
 
 #planet-cards-row {

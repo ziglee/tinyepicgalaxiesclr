@@ -106,12 +106,27 @@ $playerActionsGameStates = [
         "possibleactions" => [
             "actActivateDie", 
             "actRerollDice", 
-            "actConvertDie",
+            "actSelectConverterDice",
             "actPass",
         ],
         "transitions" => [
             "executeAction" => ST_PLAYER_CHOOSE_ACTION, 
+            "selectNewDieFace" => ST_PLAYER_CONVERT_DIE,
             "pass" => ST_NEXT_PLAYER
+        ]
+    ],
+
+    ST_PLAYER_CONVERT_DIE => [
+        "name" => "convertDie",
+        "description" => clienttranslate('${actplayer} select die to convert and its new face'), 
+        "descriptionmyturn" => clienttranslate('${you} select die to convert and its new face'),
+        "type" => "activeplayer",
+        "args" => "argConvertDie",
+        "possibleactions" => [
+            "actConvertDie", 
+        ],
+        "transitions" => [
+            "" => ST_PLAYER_CHOOSE_ACTION, 
         ]
     ],
 ];

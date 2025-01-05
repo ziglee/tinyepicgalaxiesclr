@@ -48,6 +48,14 @@ trait UtilTrait {
         $this->DbQuery("UPDATE dice SET used = true WHERE die_id = $dieId");
     }
 
+    function useDieAsConverter(int $die1Id, int $die2Id) {
+        $this->DbQuery("UPDATE dice SET used = true, converter = true WHERE die_id = $die1Id OR die_id = $die2Id");
+    }
+
+    function updateDieFace(int $dieId, int $newFace) {
+        $this->DbQuery("UPDATE dice SET face = $newFace WHERE die_id = $dieId");
+    }
+
     function resetDice() {
         $this->DbQuery("UPDATE dice SET used = false, converter = false, face = 0");
     }

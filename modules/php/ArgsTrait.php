@@ -8,15 +8,6 @@ trait ArgsTrait {
     //////////// Game state arguments
     ////////////
 
-    public function argPlayerTurn(): array
-    {
-        // Get some values from the current game situation from the database.
-
-        return [
-            "playableCardsIds" => [1, 2],
-        ];
-    }
-
     public function argPrivateChooseMission(int $playerId) {
         return [
             "missions" => array_values($this->missionCards->getPlayerHand($playerId)),
@@ -30,5 +21,9 @@ trait ArgsTrait {
             "canReroll" => $this->getUniqueIntValueFromDB("SELECT `energy_level` FROM `player` WHERE `player_id` = $playerId") > 0,
             "canConvert" => $this->getUniqueIntValueFromDB("SELECT COUNT(`die_id`) FROM `dice` WHERE `face` <> '0' AND `used` = FALSE") >= 3,
         ];
+    }
+
+    function argConvertDie() {
+        return [];
     }
 }
