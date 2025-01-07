@@ -21,8 +21,9 @@
         const die = dice[dieId];
         dojo.attr('die-slot-' + (die.id), 'data-face', die.face);
         dojo.attr('die-slot-' + (die.id), 'data-used', die.used);
-        dojo.removeClass('die-slot-' + (die.id), 'die-active');
     }
+    dojo.query('.die-active').removeClass('die-active');
+    
     dojo.empty('dice-face-selection-tray');
     for (let dieId = 1; dieId <= 7; dieId++) {
         const die = dice[dieId];
@@ -51,6 +52,7 @@ function (dojo, declare) {
             this.canFreeReroll = false;
             this.canReroll = false;
             this.canConvert = false;
+            this.selectableShips = {};
         },
         
         /*
@@ -149,6 +151,8 @@ function (dojo, declare) {
                     <div class="planet-track-end" id="planet-track-${planet.id}-slot-end">${planet.info.trackType}</div>
                 `);
             }
+            document.querySelectorAll('.planet-card').forEach(mission => mission.addEventListener('click', e => this.onPlanetClick(e)));
+            document.querySelectorAll('.planet-track-slot').forEach(mission => mission.addEventListener('click', e => this.onPlanetTrackClick(e)));
 
             // Setting up player boards
             Object.values(gamedatas.players).forEach(player => {
@@ -208,6 +212,7 @@ function (dojo, declare) {
             // Colonized planets in player's area
             for (let i in gamedatas.colonizedplanets) {
                 const planet = gamedatas.colonizedplanets[i];
+                // TODO
             }
 
             Object.values(gamedatas.ships).forEach(ship => {
@@ -216,7 +221,10 @@ function (dojo, declare) {
                         <div class="ships-hangar-slot" id="ship-${ship.id}">S-${ship.id}</div>
                     `);
                 }
-                console.log(ship);
+            });
+            
+            document.querySelectorAll('.ships-hangar-slot').forEach(die => {
+                die.addEventListener('click', e => this.onShipClick(e));
             });
  
             // Setup game notifications to handle (see "setupNotifications" method below)
@@ -249,6 +257,11 @@ function (dojo, declare) {
                 dojo.style( 'dice-tray', 'display', 'none' );
                 dojo.style( 'dice-face-selection', 'display', 'block' );
                 break;
+            case 'moveShip':
+                if (this.isCurrentPlayerActive()) {
+                    this.selectableShips = args.args.ships;
+                }
+                break;
             }
         },
 
@@ -258,6 +271,8 @@ function (dojo, declare) {
         onLeavingState: function( stateName )
         {
             console.log( 'Leaving state: '+stateName );
+            dojo.query('.die-active').removeClass('die-active');
+            dojo.query('.ship-selected').removeClass('ship-selected');
             
             switch( stateName )
             {
@@ -464,6 +479,66 @@ function (dojo, declare) {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)
             });
+        },
+
+        onShipClick: function( evt )
+        {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // The click does nothing when not active
+            if (!this.isCurrentPlayerActive()) return;
+
+            if (this.gamedatas.gamestate.name == 'moveShip') {
+                const shipId = evt.currentTarget.id.split('-')[1];
+                if (this.selectableShips[shipId]) {
+                    dojo.query('.ship-selected').removeClass('ship-selected');
+                    dojo.toggleClass(evt.currentTarget.id, 'ship-selected');
+                }
+            }
+        },
+
+        onPlanetClick: function( evt )
+        {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // The click does nothing when not active
+            if (!this.isCurrentPlayerActive()) return;
+
+            const planetId = evt.currentTarget.id.split('-')[1];
+            
+            if (this.gamedatas.gamestate.name == 'moveShip') {
+                const shipDom = (dojo.query('.ship-selected')[0]);
+                if (shipDom) {
+                    const shipId = shipDom.id.split('-')[1];
+                    this.bgaPerformAction("actMoveShip", {
+                        shipId: shipId,
+                        locationId: planetId,
+                        isTrack: false,
+                    }).then(() =>  {
+                        // What to do after the server call if it succeeded
+                        // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                    });
+                }
+            }
+        },
+
+        onPlanetTrackClick: function( evt )
+        {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // The click does nothing when not active
+            if (!this.isCurrentPlayerActive()) return;
+
+            const planetId = evt.currentTarget.id.split('-')[2];
+
+            if (this.gamedatas.gamestate.name == 'moveShip') {
+            }
         },
 
         onPassClick: function() {

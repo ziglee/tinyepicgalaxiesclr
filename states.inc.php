@@ -145,7 +145,7 @@ $playerActionsGameStates = [
             "actMoveShip", 
         ],
         "transitions" => [
-            "" => ST_PLAYER_CHOOSE_ACTION, 
+            "" => ST_AFTER_ACTION_CHECK, 
         ]
     ],
 ];

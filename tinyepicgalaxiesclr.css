@@ -225,3 +225,7 @@
 .energy-token {
     position: absolute;
 }
+
+.ship-selected {
+    background-color: greenyellow;
+}

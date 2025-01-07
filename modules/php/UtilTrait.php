@@ -44,7 +44,7 @@ trait UtilTrait {
 
     function getPlayerShips(int $playerId) {
         return $this->getCollectionFromDb(
-            "SELECT `ship_id` `id`, `player_id`, `planet_id`, `track_progress` FROM `ships` ORDER BY `player_id` = $playerId"
+            "SELECT `ship_id` `id`, `player_id`, `planet_id`, `track_progress` FROM `ships` WHERE `player_id` = $playerId"
         );
     }
 
