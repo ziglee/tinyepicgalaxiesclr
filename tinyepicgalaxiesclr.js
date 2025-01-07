@@ -48,6 +48,9 @@ function (dojo, declare) {
             // Here, you can init the global variables of your user interface
             // Example:
             // this.myGlobalValue = 0;
+            this.canFreeReroll = false;
+            this.canReroll = false;
+            this.canConvert = false;
         },
         
         /*
@@ -235,6 +238,13 @@ function (dojo, declare) {
             
             switch( stateName )
             {
+            case 'chooseAction':
+                if (this.isCurrentPlayerActive()) {
+                    this.canFreeReroll = args.args.canFreeReroll;
+                    this.canReroll = args.args.canReroll;
+                    this.canConvert = args.args.canConvert;
+                }
+                break;
             case 'convertDie':
                 dojo.style( 'dice-tray', 'display', 'none' );
                 dojo.style( 'dice-face-selection', 'display', 'block' );
@@ -360,25 +370,34 @@ function (dojo, declare) {
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
                     <a href="#" id="activate-die-btn" class="bgabutton bgabutton_blue"><span>Activate die</span></a>
                 `);
-                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                    <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll die</span></a>
-                `);
                 document.getElementById('activate-die-btn').addEventListener('click', e => this.onActivateDieClick(ids[0]));
-                document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
+
+                if (this.canFreeReroll || this.canReroll) {
+                    document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                        <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll die</span></a>
+                    `);
+                    document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
+                }
             } else if (ids.length == 2) {
-                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                    <a href="#" id="convert-dice-btn" class="bgabutton bgabutton_blue"><span>Convert die</span></a>
-                `);
-                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                    <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
-                `);
-                document.getElementById('convert-dice-btn').addEventListener('click', e => this.onSelectConverterDiceClick(ids[0], ids[1]));
-                document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
+                if (this.canConvert) {
+                    document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                        <a href="#" id="convert-dice-btn" class="bgabutton bgabutton_blue"><span>Convert die</span></a>
+                    `);
+                    document.getElementById('convert-dice-btn').addEventListener('click', e => this.onSelectConverterDiceClick(ids[0], ids[1]));
+                }
+                if (this.canFreeReroll || this.canReroll) {
+                    document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                        <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
+                    `);
+                    document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
+                }
             } else if (ids.length > 2) {
-                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                    <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
-                `);
-                document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
+                if (this.canFreeReroll || this.canReroll) {
+                    document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                        <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
+                    `);
+                    document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
+                }
             }
         },
 

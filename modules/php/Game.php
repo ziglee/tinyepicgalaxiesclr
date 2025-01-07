@@ -46,7 +46,8 @@ class Game extends \Table
         parent::__construct();
 
         $this->initGameStateLabels([
-            "free_roll_used" => 11,
+            FREE_REROLL_USED => 11,
+            LAST_TURN => 12,
         ]);
 
         $this->missionCards = $this->getNew("module.common.deck");
@@ -103,7 +104,8 @@ class Game extends \Table
         $this->reloadPlayersBasicInfos();
 
         // Init global values with their initial values.
-        $this->setGameStateInitialValue("free_roll_used", 0);
+        $this->setGameStateInitialValue(FREE_REROLL_USED, 0);
+        $this->setGameStateInitialValue(LAST_TURN, 0);
 
         $playerCount = count($players);
 
@@ -185,7 +187,7 @@ class Game extends \Table
         );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
-        $result['free_reroll_used'] = $this->getGameStateValue("free_roll_used");
+        $result['free_reroll_used'] = $this->getGameStateValue(FREE_REROLL_USED);
         $result["dice"] = $this->getDice();
         $result["ships"] = $this->getCollectionFromDb(
             "SELECT `ship_id` `id`, `player_id`, `planet_id`, `track_progress` FROM `ships` ORDER BY `ship_id`"
@@ -205,6 +207,12 @@ class Game extends \Table
   
         // Planets on the center table row
         $result['centerrow'] = $this->getPlanetsFromDb($this->planetCards->getCardsInLocation('centerrow'));
+
+        if ($isEnd) {
+            // TODO
+        } else {
+            $result['lastTurn'] = $this->getGameStateValue(LAST_TURN) > 0;
+        }
 
         return $result;
     }

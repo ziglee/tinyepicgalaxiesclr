@@ -25,40 +25,44 @@ trait StateTrait {
 
     public function stNextPlayer(): void {
         // // Retrieve the active player ID.
-        // $player_id = (int)$this->getActivePlayerId();
-
-        // if ($this->isAllRolledDiceUsed()) {
-        //     $this->gamestate->nextState("rollDice");
-        //     return;
-        // }
-
-        // // Give some extra time to the active player when he completed an action
-        // $this->giveExtraTime($player_id);
-
-        // TODO: check score
-        //$this->gamestate->nextState("endScore");
+        $player_id = (int)$this->getActivePlayerId();
         
+        $lastTurn = intval(self::getGameStateValue(LAST_TURN));
         
-        $this->setGameStateValue("free_roll_used", 0);
-        $this->resetDice();
+        // check if it was last action from player who started last turn
+        if ($lastTurn == $player_id) {
+            $this->gamestate->nextState('endScore');
+        } else {
+            if ($lastTurn == 0) {
+                // check if last turn is started
+                $playersMaxScore = $this->getPlayersMaxScore();
+                if ($playersMaxScore > 21) {
+                    self::setGameStateValue(LAST_TURN, $player_id);
 
-        $player_id = intval($this->activeNextPlayer());
-        $dice_count = $this->getPlayerDiceCount($player_id);
-        $this->rollDice($dice_count);
+                    self::notifyAllPlayers('lastTurn', clienttranslate('Starting final turn!'), []);
+                }
+            }
+            
+            $this->setGameStateValue(FREE_REROLL_USED, 0);
+            $this->resetDice();
+    
+            $player_id = intval($this->activeNextPlayer());
+            self::giveExtraTime($player_id);
+            $dice_count = $this->getPlayerDiceCount($player_id);
+            $this->rollDice($dice_count);
+    
+            $this->notifyAllPlayers(
+                "diceUpdated", 
+                clienttranslate( '${player_name} rolled the dice' ), 
+                array(
+                    'player_id' => $player_id,
+                    'player_name' => $this->getActivePlayerName(),
+                    'dice' => $this->getDice(),
+                )
+            );
 
-        $this->notifyAllPlayers(
-            "diceUpdated", 
-            clienttranslate( '${player_name} rolled the dice' ), 
-            array(
-                'player_id' => $player_id,
-                'player_name' => $this->getActivePlayerName(),
-                'dice' => $this->getDice(),
-            ) 
-        );
-
-        // Go to another gamestate
-        // Here, we would detect if the game is over, and in this case use "endGame" transition instead 
-        $this->gamestate->nextState("nextPlayer");
+            $this->gamestate->nextState("nextPlayer");
+        }
     }
 
     public function stAfterActionCheck(): void {
@@ -66,8 +70,6 @@ trait StateTrait {
             $this->gamestate->nextState("nextPlayer");
             return;
         }
-
-        // TODO check if all dice are used
         $this->gamestate->nextState("chooseAction");
     }
 

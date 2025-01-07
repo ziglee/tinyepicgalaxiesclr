@@ -28,14 +28,11 @@ trait ActionTrait {
         }
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'start');
-        self::giveExtraTime($playerId);
     }
 
     public function actActivateDie(int $dieId): void
     {
         $playerId = intval(self::getCurrentPlayerId());
-        self::giveExtraTime($playerId);
-
         $this->useDie($dieId, false);
 
         $this->notifyAllPlayers(
@@ -49,28 +46,35 @@ trait ActionTrait {
         $face = $this->getDieFaceById($dieId);
         switch ($face) {
             case DICE_FACE_ENERGY:
-
+                $shipsInEnergySpotCount = $this->getPlayerShipsInEnergySpotCount($playerId);
+                $this->incrementPlayerEnergy($playerId, $shipsInEnergySpotCount);
+                $this->gamestate->nextState("afterActionCheck");
                 break;
             case DICE_FACE_CULTURE:
+                $shipsInCultureSpotCount = $this->getPlayerShipsInCultureSpotCount($playerId);
+                $this->incrementPlayerCulture($playerId, $shipsInCultureSpotCount);
+                $this->gamestate->nextState("afterActionCheck");
                 break;
             case DICE_FACE_MOVE_SHIP:
+                $this->gamestate->nextState("moveShip");
                 break;
             case DICE_FACE_ECONOMY:
+                $this->gamestate->nextState("incEconomy");
                 break;
             case DICE_FACE_DIPLOMACY:
+                $this->gamestate->nextState("incDiplomacy");
                 break;
             case DICE_FACE_EMPIRE:
+                $this->gamestate->nextState("empireAction");
                 break;
         }
-
-        $this->gamestate->nextState("afterActionCheck");
     }
 
     public function actRerollDice(#[IntArrayParam] array $ids): void
     {
         $playerId = intval(self::getCurrentPlayerId());
 
-        $freeRollUsed = $this->getGameStateValue("free_roll_used");
+        $freeRollUsed = $this->getGameStateValue(FREE_REROLL_USED);
         $energyLevel = $this->getUniqueIntValueFromDB("SELECT `energy_level` FROM `player` WHERE `player_id` = $playerId");
 
         if ($freeRollUsed == 1 && $energyLevel == 0) {
@@ -78,7 +82,7 @@ trait ActionTrait {
         }
 
         if ($freeRollUsed == 0) {
-            $this->setGameStateValue("free_roll_used", 1);
+            $this->setGameStateValue(FREE_REROLL_USED, 1);
         } else {
             $this->DbQuery("UPDATE `player` SET `energy_level` = `energy_level` - 1 WHERE `player_id` = $playerId");
         }
@@ -142,11 +146,21 @@ trait ActionTrait {
         $this->gamestate->nextState("");
     }
 
+    public function actMoveShip(int $shipId, int $locationId, bool $isTrack): void
+    {
+        $this->dump("shipId", $shipId);
+        $this->dump("locationId", $locationId);
+        $this->dump("isTrack", $isTrack);
+
+        // TODO update ship location
+
+        $this->gamestate->nextState("");
+    }
+
     public function actPass(): void
     {
         // Retrieve the active player ID.
         $player_id = (int)$this->getActivePlayerId();
-        self::giveExtraTime($player_id);
 
         // Notify all players about the choice to pass.
         $this->notifyAllPlayers("cardPlayed", clienttranslate('${player_name} passes'), [

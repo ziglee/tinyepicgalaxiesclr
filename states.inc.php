@@ -113,6 +113,10 @@ $playerActionsGameStates = [
             "executeAction" => ST_PLAYER_CHOOSE_ACTION, 
             "afterActionCheck" => ST_AFTER_ACTION_CHECK,  
             "selectNewDieFace" => ST_PLAYER_CONVERT_DIE,
+            "moveShip" => ST_PLAYER_MOVE_SHIP,
+            "incEconomy" => ST_PLAYER_CHOOSE_ACTION,
+            "incDiplomacy" => ST_PLAYER_CHOOSE_ACTION,
+            "empireAction" => ST_PLAYER_CHOOSE_ACTION,
             "pass" => ST_NEXT_PLAYER
         ]
     ],
@@ -125,6 +129,20 @@ $playerActionsGameStates = [
         "args" => "argConvertDie",
         "possibleactions" => [
             "actConvertDie", 
+        ],
+        "transitions" => [
+            "" => ST_PLAYER_CHOOSE_ACTION, 
+        ]
+    ],
+
+    ST_PLAYER_MOVE_SHIP => [
+        "name" => "moveShip",
+        "description" => clienttranslate('${actplayer} must choose a ship to move'), 
+        "descriptionmyturn" => clienttranslate('${you} must choose a ship to move'),
+        "type" => "activeplayer",
+        "args" => "argMoveShip",
+        "possibleactions" => [
+            "actMoveShip", 
         ],
         "transitions" => [
             "" => ST_PLAYER_CHOOSE_ACTION, 
