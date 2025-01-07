@@ -43,11 +43,27 @@ trait ActionTrait {
             "", 
             array(
                 'dice' => $this->getDice(),
-            ) 
+            )
         );
 
-        // TODO check die face and choose nextState accordingly
-        $this->gamestate->nextState("executeAction");
+        $face = $this->getDieFaceById($dieId);
+        switch ($face) {
+            case DICE_FACE_ENERGY:
+
+                break;
+            case DICE_FACE_CULTURE:
+                break;
+            case DICE_FACE_MOVE_SHIP:
+                break;
+            case DICE_FACE_ECONOMY:
+                break;
+            case DICE_FACE_DIPLOMACY:
+                break;
+            case DICE_FACE_EMPIRE:
+                break;
+        }
+
+        $this->gamestate->nextState("afterActionCheck");
     }
 
     public function actRerollDice(#[IntArrayParam] array $ids): void

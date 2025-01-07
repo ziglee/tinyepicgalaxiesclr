@@ -111,6 +111,7 @@ $playerActionsGameStates = [
         ],
         "transitions" => [
             "executeAction" => ST_PLAYER_CHOOSE_ACTION, 
+            "afterActionCheck" => ST_AFTER_ACTION_CHECK,  
             "selectNewDieFace" => ST_PLAYER_CONVERT_DIE,
             "pass" => ST_NEXT_PLAYER
         ]
@@ -147,9 +148,21 @@ $gameGameStates = [
         "description" => '',
         "type" => "game",
         "action" => "stNextPlayer",
-        "updateGameProgression" => true,
         "transitions" => [
             "nextPlayer" => ST_PLAYER_CHOOSE_ACTION,
+            "endScore" => ST_END_SCORE 
+        ]
+    ],
+
+    ST_AFTER_ACTION_CHECK => [
+        "name" => "afterActionCheck",
+        "description" => '',
+        "type" => "game",
+        "action" => "stAfterActionCheck",
+        "updateGameProgression" => true,
+        "transitions" => [
+            "chooseAction" => ST_PLAYER_CHOOSE_ACTION,
+            "nextPlayer" => ST_NEXT_PLAYER,
             "endScore" => ST_END_SCORE 
         ]
     ],

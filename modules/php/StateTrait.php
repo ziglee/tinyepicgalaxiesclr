@@ -61,6 +61,16 @@ trait StateTrait {
         $this->gamestate->nextState("nextPlayer");
     }
 
+    public function stAfterActionCheck(): void {
+        if ($this->isAllRolledDiceUsed()) {
+            $this->gamestate->nextState("nextPlayer");
+            return;
+        }
+
+        // TODO check if all dice are used
+        $this->gamestate->nextState("chooseAction");
+    }
+
     public function stEndScore() {
         // TODO
 

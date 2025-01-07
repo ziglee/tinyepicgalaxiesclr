@@ -36,12 +36,16 @@ trait UtilTrait {
         );
     }
 
+    function getDieFaceById(int $dieId) {
+        return $this->getUniqueIntValueFromDB("SELECT `face` FROM `dice` where `die_id` = $dieId");
+    }
+
     function getPlanetsFromDb(array $dbObjects) {
         return array_map(fn($dbObject) => new \PlanetCard($dbObject), array_values($dbObjects));
     }
 
     function isAllRolledDiceUsed(): bool {
-        return $this->getUniqueIntValueFromDB("SELECT IF(COUNT(*) > 0, TRUE, FALSE) AS rolled_unused_count FROM dice AS d WHERE d.used = 0 AND d.face <> 0");
+        return $this->getUniqueIntValueFromDB("SELECT IF(COUNT(*) = 0, TRUE, FALSE) AS rolled_unused_count FROM dice AS d WHERE d.used = 0 AND d.face <> 0");
     }
 
     function useDie(int $dieId) {
