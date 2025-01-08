@@ -137,6 +137,7 @@ function (dojo, declare) {
                     <div class="planet-card" id="planet-${planet.id}">
                         <div>${planet.info.name} ${planet.type} (Points ${planet.info.pointsWorth})</div>
                         <div class="planet-track" id="planet-track-${planet.id}"></div>
+                        <div class="planet-surface" id="planet-surface-${planet.id}"></div>
                     </div>
                 `);
                 document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
@@ -165,7 +166,7 @@ function (dojo, declare) {
                     <div class="whiteblock" id="player-table-${player.id}">
                         <strong style="color:#${player.color};">${player.name}</strong>
                         <div class="galaxy-mat" id="galaxy-mat-${player.id}">
-                            <div class="ship-hangar" id="ships-hangar-${player.id}">
+                            <div class="ships-hangar" id="ships-hangar-${player.id}">
                                 Hangar
                             </div>
                             <div class="empire-track" id="empire-track-${player.id}">
@@ -613,7 +614,19 @@ function (dojo, declare) {
         {
             console.log('notif_shipUpdated', notif);
             const ship = notif.ship;
-            // TODO slide to new location and/or track
+            
+            if (ship.planet_id) {
+                if (ship.track_progress) {
+                    // TODO
+                    const anim = this.slideToObject(`ship-${ship.ship_id}`, `planet-track-${ship.planet_id}-slot-start`);
+                    await this.bgaPlayDojoAnimation(anim);
+                } else {
+                    const anim = this.slideToObject(`ship-${ship.ship_id}`, `planet-surface-${ship.planet_id}`);
+                    await this.bgaPlayDojoAnimation(anim);
+                }
+            } else {
+                // TODO move to player galaxy
+            }
         }
    });             
 });

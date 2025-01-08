@@ -69,13 +69,19 @@
 
 .mission-card-to-choose {
     cursor: pointer;
+    background-color: aqua;
+    padding: 10px;
+    margin: 4px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: black;
 }
 
 #activation-bay {
     width: 585px;
     height: 271px;
     background-image: url('img/activationbay.png');
- }
+}
 
 /*
  .galaxy-mat {
@@ -150,8 +156,14 @@
     border-color: blue;
 }
 
+#missions-to-choose {
+    display: flex;
+    justify-content: center;
+}
+
 #planet-cards-row {
     display: flex;
+    justify-content: center;
 }
 
 .planet-card {
@@ -161,12 +173,21 @@
     margin: 2px;
 }
 
+.planet-track {
+    position: relative;
+}
+
+.planet-surface {
+    position: relative;
+}
+
 .galaxy-mat {
     border-style: solid;
     border-width: 2px;
 }
 
-.ship-hangar {
+.ships-hangar {
+    position: relative;
     display: flex;
 }
 
@@ -187,6 +208,7 @@
 }
 
 .ships-hangar-slot {
+    position: relative;
     width: 40px;
     height: 40px;
     border-style: solid;
