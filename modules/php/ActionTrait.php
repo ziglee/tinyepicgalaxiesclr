@@ -146,13 +146,30 @@ trait ActionTrait {
         $this->gamestate->nextState("");
     }
 
-    public function actMoveShip(int $shipId, int $locationId, bool $isTrack): void
+    public function actMoveShip(int $shipId, ?int $planetId, bool $isTrack): void
     {
-        $this->dump("shipId", $shipId);
-        $this->dump("locationId", $locationId);
-        $this->dump("isTrack", $isTrack);
+        $player_id = (int)$this->getActivePlayerId();
+        $this->updateShipLocation($shipId, $planetId, $isTrack ? 0 : null);
 
-        // TODO update ship location
+        $message = '${player_name} ship moved back to its galaxy';
+        if (!is_null($planetId)) {
+            $planetCard = $this->planetCards->getCard($planetId);
+            $planet = new \PlanetCard($planetCard);
+            $message = '${player_name} ship moved to surface of '. $planet->info->name;
+            if ($isTrack) {
+                $message = '${player_name} ship moved to orbit of '. $planet->info->name;
+            } else {
+                // TODO check planet action to be performed
+            }
+        }
+
+        $ship = $this->getShipById($shipId);
+
+        $this->notifyAllPlayers("shipUpdated", clienttranslate($message), [
+            "player_id" => $player_id,
+            "player_name" => $this->getActivePlayerName(),
+            "ship" => $ship,
+        ]);
 
         $this->gamestate->nextState("");
     }

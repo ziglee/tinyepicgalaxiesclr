@@ -516,7 +516,7 @@ function (dojo, declare) {
                     const shipId = shipDom.id.split('-')[1];
                     this.bgaPerformAction("actMoveShip", {
                         shipId: shipId,
-                        locationId: planetId,
+                        planetId: planetId,
                         isTrack: false,
                     }).then(() =>  {
                         // What to do after the server call if it succeeded
@@ -582,21 +582,6 @@ function (dojo, declare) {
         },  
         
         // From this point and below, you can write your game notifications handling methods
-        
-        /*
-        Example:
-        
-        notif_cardPlayed: function( notif )
-        {
-            console.log( 'notif_cardPlayed' );
-            console.log( notif );
-            
-            // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-            
-            // TODO: play the card in the user interface.
-        },    
-        
-        */
 
         notif_missionChoosed: async function( notif )
         {
@@ -623,5 +608,12 @@ function (dojo, declare) {
             const anim = this.slideToObject(`energy-token-${player_id}`, `energy-culture-track-${player_id}-slot-${new_energy_level}`);
             await this.bgaPlayDojoAnimation(anim);
         },
+
+        notif_shipUpdated: async function( notif )
+        {
+            console.log('notif_shipUpdated', notif);
+            const ship = notif.ship;
+            // TODO slide to new location and/or track
+        }
    });             
 });

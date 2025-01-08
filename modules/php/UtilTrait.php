@@ -56,6 +56,22 @@ trait UtilTrait {
         $this->DbQuery("UPDATE player SET culture_level = LEAST(7, energy_level + $delta) WHERE player_id = $playerId");
     }
 
+    function updateShipLocation(int $shipId, ?int $planetId, ?int $trackProgress) {
+        $trackProgressUpdate = 'NULL';
+        if (!is_null($trackProgress)) {
+            $trackProgressUpdate = $trackProgress;
+        }
+        $planetIdUpdate = 'NULL';
+        if (!is_null($planetId)) {
+            $planetIdUpdate = $planetId;
+        }
+        $this->DbQuery("UPDATE ships SET planet_id = $planetIdUpdate, track_progress = $trackProgressUpdate WHERE ship_id = $shipId");
+    }
+
+    function getShipById(int $shipId) {
+        return $this->getObjectFromDB("SELECT * FROM ships WHERE ship_id = $shipId");
+    }
+
     function getDice() {
         return $this->getCollectionFromDb(
             "SELECT `die_id` `id`, `face`, `used`, `converter` FROM `dice` ORDER BY `die_id`"
