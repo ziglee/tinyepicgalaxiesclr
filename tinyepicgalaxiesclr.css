@@ -177,8 +177,15 @@
     position: relative;
 }
 
+.planet-track-start {
+    cursor: pointer;
+    background-color: gainsboro;
+}
+
 .planet-surface {
+    cursor: pointer;
     position: relative;
+    background-color: gainsboro;
 }
 
 .galaxy-mat {
@@ -187,8 +194,10 @@
 }
 
 .ships-hangar {
+    cursor: pointer;
     position: relative;
-    display: flex;
+    width: 60px;
+    background-color: gainsboro;
 }
 
 .empire-track {

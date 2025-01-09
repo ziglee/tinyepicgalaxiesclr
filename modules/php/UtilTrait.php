@@ -50,10 +50,12 @@ trait UtilTrait {
 
     function incrementPlayerEnergy(int $playerId, int $delta) {
         $this->DbQuery("UPDATE player SET energy_level = LEAST(7, energy_level + $delta) WHERE player_id = $playerId");
+        return $this->getUniqueIntValueFromDB("SELECT energy_level FROM player where player_id = $playerId;");
     }
 
     function incrementPlayerCulture(int $playerId, int $delta) {
-        $this->DbQuery("UPDATE player SET culture_level = LEAST(7, energy_level + $delta) WHERE player_id = $playerId");
+        $this->DbQuery("UPDATE player SET culture_level = LEAST(7, culture_level + $delta) WHERE player_id = $playerId");
+        return $this->getUniqueIntValueFromDB("SELECT culture_level FROM player where player_id = $playerId;");
     }
 
     function updateShipLocation(int $shipId, ?int $planetId, ?int $trackProgress) {

@@ -47,12 +47,22 @@ trait ActionTrait {
         switch ($face) {
             case DICE_FACE_ENERGY:
                 $shipsInEnergySpotCount = $this->getPlayerShipsInEnergySpotCount($playerId);
-                $this->incrementPlayerEnergy($playerId, $shipsInEnergySpotCount);
+                $newEnergyLevel = $this->incrementPlayerEnergy($playerId, $shipsInEnergySpotCount);
+                $this->notifyAllPlayers("energyLevelUpdated", clienttranslate('${player_name} acquired energy'), [
+                    "player_id" => $playerId,
+                    "player_name" => $this->getActivePlayerName(),
+                    "energy_level" => $newEnergyLevel,
+                ]);
                 $this->gamestate->nextState("afterActionCheck");
                 break;
             case DICE_FACE_CULTURE:
                 $shipsInCultureSpotCount = $this->getPlayerShipsInCultureSpotCount($playerId);
-                $this->incrementPlayerCulture($playerId, $shipsInCultureSpotCount);
+                $newCultureLevel = $this->incrementPlayerCulture($playerId, $shipsInCultureSpotCount);
+                $this->notifyAllPlayers("cultureLevelUpdated", clienttranslate('${player_name} acquired culture'), [
+                    "player_id" => $playerId,
+                    "player_name" => $this->getActivePlayerName(),
+                    "culture_level" => $newCultureLevel,
+                ]);
                 $this->gamestate->nextState("afterActionCheck");
                 break;
             case DICE_FACE_MOVE_SHIP:

@@ -137,7 +137,9 @@ function (dojo, declare) {
                     <div class="planet-card" id="planet-${planet.id}">
                         <div>${planet.info.name} ${planet.type} (Points ${planet.info.pointsWorth})</div>
                         <div class="planet-track" id="planet-track-${planet.id}"></div>
-                        <div class="planet-surface" id="planet-surface-${planet.id}"></div>
+                        <div class="planet-surface" id="planet-surface-${planet.id}">
+                            Surface
+                        </div>
                     </div>
                 `);
                 document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
@@ -153,7 +155,8 @@ function (dojo, declare) {
                 `);
             }
             document.querySelectorAll('.planet-card').forEach(mission => mission.addEventListener('click', e => this.onPlanetClick(e)));
-            document.querySelectorAll('.planet-track-slot').forEach(mission => mission.addEventListener('click', e => this.onPlanetTrackClick(e)));
+            document.querySelectorAll('.planet-surface').forEach(mission => mission.addEventListener('click', e => this.onPlanetSurfaceClick(e)));
+            document.querySelectorAll('.planet-track-start').forEach(mission => mission.addEventListener('click', e => this.onPlanetStartTrackClick(e)));
 
             // Setting up player boards
             Object.values(gamedatas.players).forEach(player => {
@@ -511,6 +514,19 @@ function (dojo, declare) {
 
             const planetId = evt.currentTarget.id.split('-')[1];
             
+        },
+
+        onPlanetSurfaceClick: function( evt )
+        {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // The click does nothing when not active
+            if (!this.isCurrentPlayerActive()) return;
+
+            const planetId = evt.currentTarget.id.split('-')[2];
+            
             if (this.gamedatas.gamestate.name == 'moveShip') {
                 const shipDom = (dojo.query('.ship-selected')[0]);
                 if (shipDom) {
@@ -527,7 +543,7 @@ function (dojo, declare) {
             }
         },
 
-        onPlanetTrackClick: function( evt )
+        onPlanetStartTrackClick: function( evt )
         {
             // Stop this event propagation
             evt.preventDefault();
@@ -539,6 +555,18 @@ function (dojo, declare) {
             const planetId = evt.currentTarget.id.split('-')[2];
 
             if (this.gamedatas.gamestate.name == 'moveShip') {
+                const shipDom = (dojo.query('.ship-selected')[0]);
+                if (shipDom) {
+                    const shipId = shipDom.id.split('-')[1];
+                    this.bgaPerformAction("actMoveShip", {
+                        shipId: shipId,
+                        planetId: planetId,
+                        isTrack: true,
+                    }).then(() =>  {
+                        // What to do after the server call if it succeeded
+                        // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                    });
+                }
             }
         },
 
@@ -617,16 +645,30 @@ function (dojo, declare) {
             
             if (ship.planet_id) {
                 if (ship.track_progress) {
-                    // TODO
-                    const anim = this.slideToObject(`ship-${ship.ship_id}`, `planet-track-${ship.planet_id}-slot-start`);
+                    let slot = 'start';
+                    if (ship.track_progress > 0) {
+                        slot = ship.track_progress;
+                    }
+                    const anim = this.slideToObject(`ship-${ship.ship_id}`, `planet-track-${ship.planet_id}-slot-${slot}`);
                     await this.bgaPlayDojoAnimation(anim);
                 } else {
                     const anim = this.slideToObject(`ship-${ship.ship_id}`, `planet-surface-${ship.planet_id}`);
                     await this.bgaPlayDojoAnimation(anim);
                 }
             } else {
-                // TODO move to player galaxy
+                const anim = this.slideToObject(`ship-${ship.ship_id}`, `ships-hangar-${ship.player_id}`);
+                await this.bgaPlayDojoAnimation(anim);
             }
-        }
-   });             
+        },
+        
+        notif_energyLevelUpdated: async function( notif )
+        {
+            console.log('notif_energyLevelUpdated', notif);
+        },
+
+        notif_cultureLevelUpdated: async function( notif )
+        {
+            console.log('notif_cultureLevelUpdated', notif);
+        },
+   });
 });
