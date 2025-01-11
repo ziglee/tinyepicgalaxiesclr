@@ -69,10 +69,10 @@ trait ActionTrait {
                 $this->gamestate->nextState("moveShip");
                 break;
             case DICE_FACE_ECONOMY:
-                $this->gamestate->nextState("incEconomy");
+                $this->gamestate->nextState("advanceEconomy");
                 break;
             case DICE_FACE_DIPLOMACY:
-                $this->gamestate->nextState("incDiplomacy");
+                $this->gamestate->nextState("advanceDiplomacy");
                 break;
             case DICE_FACE_EMPIRE:
                 $this->gamestate->nextState("empireAction");
@@ -114,11 +114,11 @@ trait ActionTrait {
             ]);
         } else {
             $this->notifyAllPlayers(
-                "energyLevelChanged", 
+                "energyLevelUpdated", 
                 "", 
                 array(
                     "player_id" => $playerId,
-                    'new_energy_level' => $energyLevel - 1,
+                    'energy_level' => $energyLevel - 1,
                 ) 
             );
         }
@@ -161,6 +161,11 @@ trait ActionTrait {
         $player_id = (int)$this->getActivePlayerId();
         $this->updateShipLocation($shipId, $planetId, $isTrack ? 0 : null);
 
+        $ship = $this->getShipById($shipId);
+        if ($ship['player_id'] != $player_id) {
+            throw new \BgaUserException('You cannot move ships of other players');
+        }
+
         $message = '${player_name} ship moved back to its galaxy';
         if (!is_null($planetId)) {
             $planetCard = $this->planetCards->getCard($planetId);
@@ -181,6 +186,101 @@ trait ActionTrait {
             "ship" => $ship,
         ]);
 
+        $this->gamestate->nextState("");
+    }
+
+    public function actAdvanceEconomy(?int $shipId): void
+    {
+        if (!is_null($shipId)) {
+            $player_id = (int)$this->getActivePlayerId();
+            $ship = $this->getShipById($shipId);
+
+            if ($ship['player_id'] != $player_id) {
+                throw new \BgaUserException('You cannot move ships of other players');
+            }
+            $planetId = $ship['planet_id'];
+            if (is_null($planetId)) {
+                throw new \BgaUserException('You cannot move ship that is not on a economy orbit');
+            }
+            $planetCard = $this->planetCards->getCard($planetId);
+            $planet = new \PlanetCard($planetCard);
+            if ($planet->info->trackType != PLANET_TRACK_ECONOMY) {
+                throw new \BgaUserException('You cannot move ship that is not on a economy orbit');
+            }
+
+            $currentProgress = $this->advanceShipProgress($shipId);
+            if ($planet->info->trackLength == $currentProgress) {
+                $ships = $this->getShipsByPlanet($planetId);
+                foreach (array_keys($ships) as $thisShipId) { 
+                    $this->updateShipLocation($thisShipId, null, null);
+                    $updatedShip = $this->getShipById($thisShipId);
+                    $this->notifyAllPlayers("shipUpdated", "", [
+                        "ship" => $updatedShip,
+                    ]);
+                }
+
+                $this->planetCards->moveCard($planetId, $player_id);
+                $draftedPlanets = $this->planetCards->pickCardsForLocation(1, 'deck', 'centerrow');
+                $this->notifyAllPlayers("planetColonized", clienttranslate('${player_name} colonized planet ${planet_name}'), [
+                    "player_id" => $player_id,
+                    "player_name" => $this->getActivePlayerName(),
+                    "planet_name" => $planet->info->name,
+                    "planet_id" => $planetId,
+                    "drafted_planet" => new \PlanetCard($draftedPlanets[0]),
+                ]);
+
+                $newScore = $this->incrementPlayerScore($player_id, $planet->info->pointsWorth);
+                $this->notifyAllPlayers("playerScoreChanged", "", [
+                    "player_id" => $player_id,
+                    "player_name" => $this->getActivePlayerName(),
+                    "score" => $newScore,
+                ]);
+            } else {
+                $ship = $this->getShipById($shipId);
+                $this->notifyAllPlayers("shipUpdated", clienttranslate('${player_name} ship advanced economy orbit'), [
+                    "player_id" => $player_id,
+                    "player_name" => $this->getActivePlayerName(),
+                    "ship" => $ship,
+                ]);
+            }
+        }
+        $this->gamestate->nextState("");
+    }
+
+    public function actAdvanceDiplomacy(?int $shipId): void
+    {
+        if (!is_null($shipId)) {
+            $player_id = (int)$this->getActivePlayerId();
+            $ship = $this->getShipById($shipId);
+
+            if ($ship['player_id'] != $player_id) {
+                throw new \BgaUserException('You cannot move ships of other players');
+            }
+            if ($ship['player_id'] != $player_id) {
+                throw new \BgaUserException('You cannot move ships of other players');
+            }
+            $planetId = $ship['planet_id'];
+            if (is_null($planetId)) {
+                throw new \BgaUserException('You cannot move ship that is not on a diplomacy orbit');
+            }
+            $planetCard = $this->planetCards->getCard($planetId);
+            $planet = new \PlanetCard($planetCard);
+            if ($planet->info->trackType != PLANET_TRACK_DIPLOMACY) {
+                throw new \BgaUserException('You cannot move ship that is not on a diplomacy orbit');
+            }
+
+            $currentProgress = $this->advanceShipProgress($shipId);
+            if ($planet->info->trackLength == $currentProgress) {
+                // TODO
+            }
+
+            $ship = $this->getShipById($shipId);
+            $this->notifyAllPlayers("shipUpdated", clienttranslate('${player_name} ship advanced diplomacy orbit'), [
+                "player_id" => $player_id,
+                "player_name" => $this->getActivePlayerName(),
+                "ship" => $ship,
+            ]);
+        }
         $this->gamestate->nextState("");
     }
 

@@ -114,8 +114,8 @@ $playerActionsGameStates = [
             "afterActionCheck" => ST_AFTER_ACTION_CHECK,  
             "selectNewDieFace" => ST_PLAYER_CONVERT_DIE,
             "moveShip" => ST_PLAYER_MOVE_SHIP,
-            "incEconomy" => ST_PLAYER_CHOOSE_ACTION,
-            "incDiplomacy" => ST_PLAYER_CHOOSE_ACTION,
+            "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
+            "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
             "empireAction" => ST_PLAYER_CHOOSE_ACTION,
             "pass" => ST_NEXT_PLAYER
         ]
@@ -143,6 +143,34 @@ $playerActionsGameStates = [
         "args" => "argMoveShip",
         "possibleactions" => [
             "actMoveShip", 
+        ],
+        "transitions" => [
+            "" => ST_AFTER_ACTION_CHECK, 
+        ]
+    ],
+
+    ST_PLAYER_ADVANCE_ECONOMY => [
+        "name" => "advanceEconomy",
+        "description" => clienttranslate('${actplayer} must choose a ship on orbit of economy type'), 
+        "descriptionmyturn" => clienttranslate('${you} must choose a ship on orbit of economy type'),
+        "type" => "activeplayer",
+        "args" => "argAdvanceEconomy",
+        "possibleactions" => [
+            "actAdvanceEconomy", 
+        ],
+        "transitions" => [
+            "" => ST_AFTER_ACTION_CHECK, 
+        ]
+    ],
+
+    ST_PLAYER_ADVANCE_DIPLOMACY => [
+        "name" => "advanceDiplomacy",
+        "description" => clienttranslate('${actplayer} must choose a ship on orbit of diplomacy type'), 
+        "descriptionmyturn" => clienttranslate('${you} must choose a ship on orbit of diplomacy type'),
+        "type" => "activeplayer",
+        "args" => "argAdvanceDiplomacy",
+        "possibleactions" => [
+            "actAdvanceDiplomacy", 
         ],
         "transitions" => [
             "" => ST_AFTER_ACTION_CHECK, 

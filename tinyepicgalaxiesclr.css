@@ -216,13 +216,20 @@
     display: flex;
 }
 
-.ships-hangar-slot {
+.ship {
+    cursor: pointer;
     position: relative;
     width: 40px;
     height: 40px;
     border-style: solid;
     border-width: 1px;
 }
+
+.ship[data-color="ff0000"] { background-color: #ff0000; }
+.ship[data-color="008000"] { background-color: #008000; }
+.ship[data-color="0000ff"] { background-color: #0000ff; }
+.ship[data-color="ffe500"] { background-color: #ffe500; }
+.ship[data-color="000000"] { background-color: #000000; }
 
 .empire-track-slot {
     width: 40px;
@@ -258,5 +265,5 @@
 }
 
 .ship-selected {
-    background-color: greenyellow;
+    border-color: greenyellow;
 }

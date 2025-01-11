@@ -23,16 +23,6 @@
         dojo.attr('die-slot-' + (die.id), 'data-used', die.used);
     }
     dojo.query('.die-active').removeClass('die-active');
-    
-    dojo.empty('dice-face-selection-tray');
-    for (let dieId = 1; dieId <= 7; dieId++) {
-        const die = dice[dieId];
-        if (die.used == '0' && die.face != '0') {
-            document.getElementById('dice-face-selection-tray').insertAdjacentHTML('beforeend', `
-                <div class="die-convert-slot die-face" id="die-convert-slot-${die.id}" data-face="${die.face}" data-used="0"></div>
-            `);
-        }
-    }
  }
 
 define([
@@ -110,9 +100,6 @@ function (dojo, declare) {
             document.querySelectorAll('.die-slot').forEach(die => {
                 die.addEventListener('click', e => this.onDieClick(e));
             });
-            document.querySelectorAll('.die-convert-slot').forEach(die => {
-                die.addEventListener('click', e => this.onDieToConvertClick(e));
-            });
             document.querySelectorAll('.die-newface').forEach(die => {
                 die.addEventListener('click', e => this.onDieNewFaceClick(e));
             });
@@ -133,30 +120,8 @@ function (dojo, declare) {
             // Planets on center row
             for (let i in gamedatas.centerrow) {
                 const planet = gamedatas.centerrow[i];
-                document.getElementById('planet-cards-row').insertAdjacentHTML('beforeend', `
-                    <div class="planet-card" id="planet-${planet.id}">
-                        <div>${planet.info.name} ${planet.type} (Points ${planet.info.pointsWorth})</div>
-                        <div class="planet-track" id="planet-track-${planet.id}"></div>
-                        <div class="planet-surface" id="planet-surface-${planet.id}">
-                            Surface
-                        </div>
-                    </div>
-                `);
-                document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
-                    <div class="planet-track-start" id="planet-track-${planet.id}-slot-start">start</div>
-                `);
-                for (let trackSlot = 1; trackSlot <= planet.info.trackLength; trackSlot++) {
-                document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
-                    <div class="planet-track-slot" id="planet-track-${planet.id}-slot-${trackSlot}">${trackSlot}</div>
-                `);
-                }
-                document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
-                    <div class="planet-track-end" id="planet-track-${planet.id}-slot-end">${planet.info.trackType}</div>
-                `);
+                this.addPlanetToCenterRow(planet);
             }
-            document.querySelectorAll('.planet-card').forEach(mission => mission.addEventListener('click', e => this.onPlanetClick(e)));
-            document.querySelectorAll('.planet-surface').forEach(mission => mission.addEventListener('click', e => this.onPlanetSurfaceClick(e)));
-            document.querySelectorAll('.planet-track-start').forEach(mission => mission.addEventListener('click', e => this.onPlanetStartTrackClick(e)));
 
             // Setting up player boards
             Object.values(gamedatas.players).forEach(player => {
@@ -220,14 +185,25 @@ function (dojo, declare) {
             }
 
             Object.values(gamedatas.ships).forEach(ship => {
+                const color = this.gamedatas.players[ship.player_id].color;
                 if (ship.planet_id == null) {
                     document.getElementById(`ships-hangar-${ship.player_id}`).insertAdjacentHTML('beforeend', `
-                        <div class="ships-hangar-slot" id="ship-${ship.id}">S-${ship.id}</div>
+                        <div class="ship" id="ship-${ship.id}" data-color="${color}">S-${ship.id}</div>
                     `);
+                } else {
+                    if (ship.track_progress == null) {
+                        dojo.place(`<div class="ship" id="ship-${ship.id}" data-color="${color}">S-${ship.id}</div>`, `planet-surface-${ship.planet_id}`);
+                    } else {
+                        let slot = 'start';
+                        if (ship.track_progress > 0) {
+                            slot = ship.track_progress;
+                        }
+                        dojo.place(`<div class="ship" id="ship-${ship.id}" data-color="${color}">S-${ship.id}</div>`, `planet-track-${ship.planet_id}-slot-${slot}`);
+                    }
                 }
             });
             
-            document.querySelectorAll('.ships-hangar-slot').forEach(die => {
+            document.querySelectorAll('.ship').forEach(die => {
                 die.addEventListener('click', e => this.onShipClick(e));
             });
  
@@ -258,12 +234,33 @@ function (dojo, declare) {
                 }
                 break;
             case 'convertDie':
+                ;
                 dojo.style( 'dice-tray', 'display', 'none' );
                 dojo.style( 'dice-face-selection', 'display', 'block' );
+
+                dojo.empty('dice-face-selection-tray');
+                args.args.converterDice.forEach(die => {
+                    document.getElementById('dice-face-selection-tray').insertAdjacentHTML('beforeend', `
+                        <div class="die-convert-slot die-face" id="die-convert-slot-${die.id}" data-face="${die.face}" data-used="0"></div>
+                    `);
+                });
+                document.querySelectorAll('.die-convert-slot').forEach(die => {
+                    die.addEventListener('click', e => this.onDieToConvertClick(e));
+                });
                 break;
             case 'moveShip':
                 if (this.isCurrentPlayerActive()) {
-                    this.selectableShips = args.args.ships;
+                    this.selectableShips = args.args.selectableShips;
+                }
+                break;
+            case 'advanceEconomy':
+                if (this.isCurrentPlayerActive()) {
+                    this.selectableShips = args.args.selectableShips;
+                }
+                break;
+            case 'advanceDiplomacy':
+                if (this.isCurrentPlayerActive()) {
+                    this.selectableShips = args.args.selectableShips;
                 }
                 break;
             }
@@ -327,6 +324,31 @@ function (dojo, declare) {
             script.
         
         */
+       addPlanetToCenterRow: function(planet) {
+            document.getElementById('planet-cards-row').insertAdjacentHTML('beforeend', `
+                <div class="planet-card" id="planet-${planet.id}">
+                    <div>${planet.info.name} ${planet.type} (Points ${planet.info.pointsWorth})</div>
+                    <div class="planet-track" id="planet-track-${planet.id}"></div>
+                    <div class="planet-surface" id="planet-surface-${planet.id}">
+                        Surface
+                    </div>
+                </div>
+            `);
+            document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
+                <div class="planet-track-start" id="planet-track-${planet.id}-slot-start">start</div>
+            `);
+            for (let trackSlot = 1; trackSlot <= planet.info.trackLength; trackSlot++) {
+            document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
+                <div class="planet-track-slot" id="planet-track-${planet.id}-slot-${trackSlot}">${trackSlot}</div>
+            `);
+            }
+            document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
+                <div class="planet-track-end" id="planet-track-${planet.id}-slot-end">${planet.info.trackType}</div>
+            `);
+            dojo.connect( $(`planet-${planet.id}`), 'onclick', this, 'onPlanetClick' );
+            dojo.connect( $(`planet-surface-${planet.id}`), 'onclick', this, 'onPlanetSurfaceClick' );
+            dojo.connect( $(`planet-track-${planet.id}-slot-start`), 'onclick', this, 'onPlanetStartTrackClick' );
+       },
 
 
         ///////////////////////////////////////////////////
@@ -494,11 +516,20 @@ function (dojo, declare) {
             // The click does nothing when not active
             if (!this.isCurrentPlayerActive()) return;
 
+            const shipId = evt.currentTarget.id.split('-')[1];
             if (this.gamedatas.gamestate.name == 'moveShip') {
-                const shipId = evt.currentTarget.id.split('-')[1];
                 if (this.selectableShips[shipId]) {
                     dojo.query('.ship-selected').removeClass('ship-selected');
                     dojo.toggleClass(evt.currentTarget.id, 'ship-selected');
+                }
+            } else if (this.gamedatas.gamestate.name == 'advanceEconomy' || this.gamedatas.gamestate.name == 'advanceDiplomacy') {
+                if (this.selectableShips[shipId]) {
+                    this.bgaPerformAction("actAdvanceEconomy", {
+                        shipId: shipId,
+                    }).then(() =>  {
+                        // What to do after the server call if it succeeded
+                        // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                    });
                 }
             }
         },
@@ -629,20 +660,10 @@ function (dojo, declare) {
             console.log('notif_freeRerollWasUsed', notif);
         },
 
-        notif_energyLevelChanged: async function( notif )
-        {
-            console.log('notif_energyLevelChanged', notif);
-            const player_id = notif.player_id;
-            const new_energy_level = notif.new_energy_level;
-            const anim = this.slideToObject(`energy-token-${player_id}`, `energy-culture-track-${player_id}-slot-${new_energy_level}`);
-            await this.bgaPlayDojoAnimation(anim);
-        },
-
         notif_shipUpdated: async function( notif )
         {
             console.log('notif_shipUpdated', notif);
             const ship = notif.ship;
-            
             if (ship.planet_id) {
                 if (ship.track_progress) {
                     let slot = 'start';
@@ -664,11 +685,33 @@ function (dojo, declare) {
         notif_energyLevelUpdated: async function( notif )
         {
             console.log('notif_energyLevelUpdated', notif);
+
+            const anim = this.slideToObject( `energy-token-${notif.player_id}`, `energy-culture-track-${notif.player_id}-slot-${notif.energy_level}`);
+            await this.bgaPlayDojoAnimation(anim);
         },
 
         notif_cultureLevelUpdated: async function( notif )
         {
             console.log('notif_cultureLevelUpdated', notif);
+
+            const anim = this.slideToObject(`culture-token-${notif.player_id}`, `energy-culture-track-${notif.player_id}-slot-${notif.culture_level}`);
+            await this.bgaPlayDojoAnimation(anim);
+        },
+
+        notif_playerScoreChanged: async function( notif )
+        {
+            console.log('notif_playerScoreChanged', notif);
+
+            this.scoreCtrl[notif.player_id].toValue(notif.score); 
+        },
+
+        notif_planetColonized: async function( notif )
+        {
+            console.log('notif_planetColonized', notif);
+
+            dojo.destroy(`planet-${notif.planet_id}`);
+            const draftedPlanet = notif.drafted_planet;
+            this.addPlanetToCenterRow(draftedPlanet);
         },
    });
 });

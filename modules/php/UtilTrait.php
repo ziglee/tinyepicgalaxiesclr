@@ -26,6 +26,12 @@ trait UtilTrait {
         return $this->getUniqueIntValueFromDB("SELECT MAX(player_score) FROM player");
     }
 
+    function getPlayersCustomCollection() {
+        return $this->getCollectionFromDb(
+            "SELECT `player_id` `id`, `player_score` `score`, `empire_level`, `energy_level`, `culture_level`, `dice_count` FROM `player`"
+        );
+    }
+
     function getPlayerScore(int $playerId) {
         return $this->getUniqueIntValueFromDB("SELECT player_score FROM player where `player_id` = $playerId");
     }
@@ -34,12 +40,22 @@ trait UtilTrait {
         return $this->getUniqueIntValueFromDB("SELECT dice_count FROM player where `player_id` = $playerId");
     }
 
+    function incrementPlayerScore(int $playerId, int $delta) {
+        $this->DbQuery("UPDATE player SET player_score = player_score + $delta WHERE player_id = $playerId");
+        return $this->getPlayerScore($playerId);
+    }
+
     function getPlayerShipsInEnergySpotCount(int $playerId) {
         return $this->getUniqueIntValueFromDB("SELECT COUNT(s.ship_id) FROM ships as s LEFT JOIN planet_cards p on p.card_id = s.planet_id where s.player_id = $playerId AND (s.planet_id IS NULL OR p.card_type = '". PLANET_TYPE_ENERGY ."');");
     }
 
     function getPlayerShipsInCultureSpotCount(int $playerId) {
         return $this->getUniqueIntValueFromDB("SELECT COUNT(s.ship_id) FROM ships as s LEFT JOIN planet_cards p on p.card_id = s.planet_id where s.player_id = $playerId AND p.card_type = '". PLANET_TYPE_CULTURE ."';");
+    }
+
+    function advanceShipProgress(int $shipId) {
+        $this->DbQuery("UPDATE ships SET track_progress = track_progress + 1 WHERE ship_id = $shipId");
+        return $this->getUniqueIntValueFromDB("SELECT track_progress FROM ships where ship_id = $shipId;");
     }
 
     function getPlayerShips(int $playerId) {
@@ -56,6 +72,12 @@ trait UtilTrait {
     function incrementPlayerCulture(int $playerId, int $delta) {
         $this->DbQuery("UPDATE player SET culture_level = LEAST(7, culture_level + $delta) WHERE player_id = $playerId");
         return $this->getUniqueIntValueFromDB("SELECT culture_level FROM player where player_id = $playerId;");
+    }
+
+    function getShipsByPlanet(int $planetId) { 
+        return $this->getCollectionFromDb(
+            "SELECT `ship_id` `id`, `player_id`, `planet_id`, `track_progress` FROM `ships` WHERE `planet_id` = $planetId"
+        );
     }
 
     function updateShipLocation(int $shipId, ?int $planetId, ?int $trackProgress) {

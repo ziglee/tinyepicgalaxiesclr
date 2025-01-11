@@ -181,12 +181,9 @@ class Game extends \Table
         $current_player_id = (int) $this->getCurrentPlayerId();
 
         // Get information about players.
-        // NOTE: you can retrieve some extra field you added for "player" table in `dbmodel.sql` if you need it.
-        $result["players"] = $this->getCollectionFromDb(
-            "SELECT `player_id` `id`, `player_score` `score`, `empire_level`, `energy_level`, `culture_level`, `dice_count` FROM `player`"
-        );
+        $result["players"] = $this->getPlayersCustomCollection();
 
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
+        // Gather all information about current game situation (visible by player $current_player_id).
         $result['free_reroll_used'] = $this->getGameStateValue(FREE_REROLL_USED);
         $result["dice"] = $this->getDice();
         $result["ships"] = $this->getCollectionFromDb(

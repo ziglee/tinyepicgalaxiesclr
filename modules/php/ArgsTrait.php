@@ -24,13 +24,38 @@ trait ArgsTrait {
     }
 
     function argConvertDie() {
-        return [];
+        return [
+            "converterDice" => array_values(
+                array_filter(
+                    $this->getDice(), 
+                    function($die) {
+                        return $die['used'] == 0 && $die['face'] != 0;
+                    }
+                )
+            ),
+        ];
     }
 
     function argMoveShip() {
         $playerId = intval(self::getActivePlayerId());
         return [
-            "ships" => $this->getPlayerShips($playerId),
+            "selectableShips" => $this->getPlayerShips($playerId),
+        ];
+    }
+
+    function argAdvanceEconomy() {
+        $playerId = intval(self::getActivePlayerId());
+        $ships = $this->getPlayerShips($playerId);
+        return [
+            "selectableShips" => $ships, // TODO: FILTER
+        ];
+    }
+
+    function argAdvanceDiplomacy() {
+        $playerId = intval(self::getActivePlayerId());
+        $ships = $this->getPlayerShips($playerId);
+        return [
+            "selectableShips" => $ships, // TODO: FILTER
         ];
     }
 }

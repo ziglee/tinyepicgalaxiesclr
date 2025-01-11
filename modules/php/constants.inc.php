@@ -15,8 +15,8 @@ const ST_PRIVATE_CHOOSE_MISSION = 22;
 const ST_PLAYER_CHOOSE_ACTION = 30;
 const ST_PLAYER_CONVERT_DIE = 31;
 const ST_PLAYER_MOVE_SHIP = 32;
-const ST_PLAYER_INC_ECONOMY = 33;
-const ST_PLAYER_INC_DIPLOMACY = 34;
+const ST_PLAYER_ADVANCE_ECONOMY = 33;
+const ST_PLAYER_ADVANCE_DIPLOMACY = 34;
 const ST_PLAYER_EMPIRE_ACTION = 35;
 
 const ST_NEXT_PLAYER = 88;
@@ -82,6 +82,9 @@ const DICE_FACE_DIPLOMACY = 6;
 const PLANET_TYPE_CULTURE = "culture";
 const PLANET_TYPE_ENERGY = "energy";
 
+const PLANET_TRACK_ECONOMY = "economy";
+const PLANET_TRACK_DIPLOMACY = "diplomacy";
+
 const PLANET_ANDELLOUXIAN6 = 1;
 const PLANET_AUGHMOORE = 2;
 const PLANET_BIRKOMIUS = 3;
@@ -112,22 +115,22 @@ class PlanetInfo {
 }
 
 const CULTURE_PLANETS = array(
-    PLANET_ANDELLOUXIAN6 => new PlanetInfo("ANDELLOUXIAN-6", "economy", 4, 5),
-    PLANET_BISSCHOP => new PlanetInfo("BISSCHOP", "economy", 1, 1),
-    PLANET_DREWKAIDEN => new PlanetInfo("DREWKAIDEN", "economy", 1, 1),
-    PLANET_GYORE => new PlanetInfo("GYORE", "economy", 5, 7),
-    PLANET_HELIOS => new PlanetInfo("HELIOS", "diplomacy", 2, 2),
-    PLANET_HOEFKER => new PlanetInfo("HOEFKER", "economy", 2, 2),
-    PLANET_JAC110912 => new PlanetInfo("JAC-110912", "economy", 4, 5),
+    PLANET_ANDELLOUXIAN6 => new PlanetInfo("ANDELLOUXIAN-6", PLANET_TRACK_ECONOMY, 4, 5),
+    PLANET_BISSCHOP => new PlanetInfo("BISSCHOP", PLANET_TRACK_ECONOMY, 1, 1),
+    PLANET_DREWKAIDEN => new PlanetInfo("DREWKAIDEN", PLANET_TRACK_ECONOMY, 1, 1),
+    PLANET_GYORE => new PlanetInfo("GYORE", PLANET_TRACK_ECONOMY, 5, 7),
+    PLANET_HELIOS => new PlanetInfo("HELIOS", PLANET_TRACK_DIPLOMACY, 2, 2),
+    PLANET_HOEFKER => new PlanetInfo("HOEFKER", PLANET_TRACK_ECONOMY, 2, 2),
+    PLANET_JAC110912 => new PlanetInfo("JAC-110912", PLANET_TRACK_ECONOMY, 4, 5),
 );
 const ENERGY_PLANETS = array(
-    PLANET_AUGHMOORE => new PlanetInfo("AUGHMOORE", "diplomacy", 5, 7),
-    PLANET_BIRKOMIUS => new PlanetInfo("BIRKOMIUS", "diplomacy", 1, 1),
-    PLANET_BRUMBAUGH => new PlanetInfo("BRUMBAUGH", "diplomacy", 3, 3),
-    PLANET_BSW101 => new PlanetInfo("BSW-10-1", "diplomacy", 4, 5),
-    PLANET_CLJ0517 => new PlanetInfo("CLJ-0517", "economy", 2, 2),
-    PLANET_GLEAMZANIER => new PlanetInfo("GLEAM-ZANIER", "diplomacy", 4, 5),
-    PLANET_GORT => new PlanetInfo("GORT", "economy", 5, 7),
+    PLANET_AUGHMOORE => new PlanetInfo("AUGHMOORE", PLANET_TRACK_DIPLOMACY, 5, 7),
+    PLANET_BIRKOMIUS => new PlanetInfo("BIRKOMIUS", PLANET_TRACK_DIPLOMACY, 1, 1),
+    PLANET_BRUMBAUGH => new PlanetInfo("BRUMBAUGH", PLANET_TRACK_DIPLOMACY, 3, 3),
+    PLANET_BSW101 => new PlanetInfo("BSW-10-1", PLANET_TRACK_DIPLOMACY, 4, 5),
+    PLANET_CLJ0517 => new PlanetInfo("CLJ-0517", PLANET_TRACK_ECONOMY, 2, 2),
+    PLANET_GLEAMZANIER => new PlanetInfo("GLEAM-ZANIER", PLANET_TRACK_DIPLOMACY, 4, 5),
+    PLANET_GORT => new PlanetInfo("GORT", PLANET_TRACK_ECONOMY, 5, 7),
 );
 const PLANETS_BY_TYPE = array(
     PLANET_TYPE_CULTURE => CULTURE_PLANETS,
