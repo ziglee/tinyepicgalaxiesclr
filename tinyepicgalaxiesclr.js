@@ -93,8 +93,8 @@ function (dojo, declare) {
                     <div id="deck">DECK</div>
                     <div id="planet-cards-row"></div>
                 </div>
-                <div id="activation-bay"></div>
                 <div id="player-tables"></div>
+                <div id="activation-bay"></div>
             `);
             
             // Set up your game interface here, according to "gamedatas"
@@ -724,6 +724,17 @@ function (dojo, declare) {
                 // await this.bgaPlayDojoAnimation(anim);
                 dojo.place( $(`ship-${ship.ship_id}`), `ships-hangar-${ship.player_id}` );
             }
+        },
+
+        notif_shipAdded: async function( notif )
+        {
+            console.log('notif_shipAdded', notif);
+            
+            const ship = notif.ship;
+            const color = this.gamedatas.players[ship.player_id].color;
+            document.getElementById(`ships-hangar-${ship.player_id}`).insertAdjacentHTML('beforeend', `
+                <div class="ship" id="ship-${ship.ship_id}" data-color="${color}">S-${ship.ship_id}</div>
+            `);
         },
         
         notif_energyLevelUpdated: async function( notif )

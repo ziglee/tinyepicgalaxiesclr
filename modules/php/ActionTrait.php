@@ -233,7 +233,7 @@ trait ActionTrait {
             if ($isTrack) {
                 $message = '${player_name} ship moved to orbit of '. $planet->info->name;
             } else {
-                // TODO check planet action to be performed
+                $this->executePlanetAction($player_id, $planetId);
             }
         }
 
@@ -375,7 +375,15 @@ trait ActionTrait {
         switch ($nextEmpireLevel) {
             case 3:
             case 5:
-                $this->DbQuery("INSERT INTO ships (player_id) VALUES $playerId");
+                $this->DbQuery("INSERT INTO ships (player_id) VALUES ($playerId)");
+                $shipId = $this->DbGetLastId();
+                $this->dump( 'shipId', $shipId );
+                $ship = $this->getShipById($shipId);
+                $this->notifyAllPlayers("shipAdded", "", [
+                    "player_id" => $playerId,
+                    "player_name" => $this->getActivePlayerName(),
+                    "ship" => $ship,
+                ]);
                 break;
             case 2:
             case 4:
@@ -398,5 +406,8 @@ trait ActionTrait {
 
         // at the end of the action, move to the next state
         $this->gamestate->nextState("pass");
+    }
+
+    private function executePlanetAction(int $playerId, int $planetId) {
     }
 }
