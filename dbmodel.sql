@@ -38,6 +38,7 @@
  ALTER TABLE `player` ADD `culture_level` INT UNSIGNED NOT NULL DEFAULT '1';
  ALTER TABLE `player` ADD `dice_count` INT UNSIGNED NOT NULL DEFAULT '4';
  ALTER TABLE `player` ADD `mission` varchar(16) DEFAULT NULL;
+ ALTER TABLE `player` ADD `dice_to_add_next_turn` INT UNSIGNED NOT NULL DEFAULT '0';
 
 CREATE TABLE IF NOT EXISTS `planet_cards` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,

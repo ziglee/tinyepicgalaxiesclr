@@ -116,7 +116,8 @@ $playerActionsGameStates = [
             "moveShip" => ST_PLAYER_MOVE_SHIP,
             "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
             "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
-            "empireAction" => ST_PLAYER_CHOOSE_ACTION,
+            "chooseEmpireAction" => ST_PLAYER_CHOOSE_ACTION,
+            "chooseHowToUpgradeEmpire" => ST_PLAYER_UPGRADE_EMPIRE,
             "pass" => ST_NEXT_PLAYER
         ]
     ],
@@ -176,6 +177,19 @@ $playerActionsGameStates = [
             "" => ST_AFTER_ACTION_CHECK, 
         ]
     ],
+
+    ST_PLAYER_UPGRADE_EMPIRE => [
+        "name" => "upgradeEmpire",
+        "description" => clienttranslate('${actplayer} must select energy or culture to upgrade your empire'), 
+        "descriptionmyturn" => clienttranslate('${you} must select energy or culture to upgrade your empire'),
+        "type" => "activeplayer",
+        "possibleactions" => [
+            "actUpgradeEmpire", 
+        ],
+        "transitions" => [
+            "" => ST_AFTER_ACTION_CHECK, 
+        ]
+    ]
 ];
 
 $gameGameStates = [

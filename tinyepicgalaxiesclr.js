@@ -89,7 +89,9 @@ function (dojo, declare) {
                         <div class="die-newface die-face" data-face="6"></div>
                     </div>
                 </div>
-                <div class="whiteblock" id="planet-cards-row">
+                <div class="whiteblock" style="display: flex;">
+                    <div id="deck">DECK</div>
+                    <div id="planet-cards-row"></div>
                 </div>
                 <div id="activation-bay"></div>
                 <div id="player-tables"></div>
@@ -176,6 +178,14 @@ function (dojo, declare) {
                     'beforeend', 
                     `<div class="empire-token" data-color="${player.color}" id="empire-token-${player.id}">EM</div>`
                 );
+                gamedatas.colonizedplanets[player.id].forEach(planet => {
+                    document.getElementById(`colonized-planets-row-${player.id}`).insertAdjacentHTML(
+                        'beforeend', 
+                        `<div class="colonized-planet" id="planet-${planet.id}">
+                            ${planet.info.name} (Points ${planet.info.pointsWorth})
+                        </div>` 
+                    );
+                });
             });
 
             // Colonized planets in player's area
@@ -298,7 +308,7 @@ function (dojo, declare) {
                     case 'privateChooseMission':
                         const missions = args.missions; // returned by the argPrivateChooseMission
                         missions.forEach(
-                            mission => this.addActionButton(`actChooseMission${mission.id}-btn`, _('Choose mission ${mission}').replace('${mission}', mission.type), () => this.onChooseMissionClick(mission.id)) 
+                            mission => this.addActionButton(`actChooseMission${mission.id}-btn`, mission.type, () => this.onChooseMissionClick(mission.id)) 
                         );
                         break;
                     case 'chooseAction':
@@ -310,6 +320,10 @@ function (dojo, declare) {
                         // if (args.canConvert) {
                         //     this.addActionButton(`actChooseActionConvertDie-btn`, _('Convert die'), () => this.onChooseActionConvertDieClick());
                         // }
+                        break;
+                    case 'empireAction':
+                        this.addActionButton(`actUpgradeEmpireEnergy-btn`, _('Energy'), () => this.onUpgradeEmpireClick('energy')); 
+                        this.addActionButton(`actUpgradeEmpireCulture-btn`, _('Culture'), () => this.onUpgradeEmpireClick('culture'));
                         break;
                 }
             }
@@ -325,7 +339,7 @@ function (dojo, declare) {
         
         */
        addPlanetToCenterRow: function(planet) {
-            document.getElementById('planet-cards-row').insertAdjacentHTML('beforeend', `
+            dojo.place(`
                 <div class="planet-card" id="planet-${planet.id}">
                     <div>${planet.info.name} ${planet.type} (Points ${planet.info.pointsWorth})</div>
                     <div class="planet-track" id="planet-track-${planet.id}"></div>
@@ -333,7 +347,9 @@ function (dojo, declare) {
                         Surface
                     </div>
                 </div>
-            `);
+                `, 
+                'planet-cards-row'
+            );
             document.getElementById(`planet-track-${planet.id}`).insertAdjacentHTML('beforeend', `
                 <div class="planet-track-start" id="planet-track-${planet.id}-slot-start">start</div>
             `);
@@ -517,20 +533,36 @@ function (dojo, declare) {
             if (!this.isCurrentPlayerActive()) return;
 
             const shipId = evt.currentTarget.id.split('-')[1];
-            if (this.gamedatas.gamestate.name == 'moveShip') {
-                if (this.selectableShips[shipId]) {
-                    dojo.query('.ship-selected').removeClass('ship-selected');
-                    dojo.toggleClass(evt.currentTarget.id, 'ship-selected');
-                }
-            } else if (this.gamedatas.gamestate.name == 'advanceEconomy' || this.gamedatas.gamestate.name == 'advanceDiplomacy') {
-                if (this.selectableShips[shipId]) {
-                    this.bgaPerformAction("actAdvanceEconomy", {
-                        shipId: shipId,
-                    }).then(() =>  {
-                        // What to do after the server call if it succeeded
-                        // (most of the time, nothing, as the game will react to notifs / change of state instead)
-                    });
-                }
+
+
+            switch( this.gamedatas.gamestate.name )
+            {
+                case 'moveShip':
+                    if (this.selectableShips[shipId]) {
+                        dojo.query('.ship-selected').removeClass('ship-selected');
+                        dojo.toggleClass(evt.currentTarget.id, 'ship-selected');
+                    }
+                    break;
+                case 'advanceEconomy':
+                    if (this.selectableShips[shipId]) {
+                        this.bgaPerformAction("actAdvanceEconomy", {
+                            shipId: shipId,
+                        }).then(() =>  {
+                            // What to do after the server call if it succeeded
+                            // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                        });
+                    }
+                    break;
+                case 'advanceDiplomacy':
+                    if (this.selectableShips[shipId]) {
+                        this.bgaPerformAction("actAdvanceDiplomacy", {
+                            shipId: shipId,
+                        }).then(() =>  {
+                            // What to do after the server call if it succeeded
+                            // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                        });
+                    }
+                    break;
             }
         },
 
@@ -608,6 +640,15 @@ function (dojo, declare) {
             });
         },
 
+        onUpgradeEmpireClick: function(type) {
+            this.bgaPerformAction("actUpgradeEmpire", {
+                type: type,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
         
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
@@ -670,15 +711,18 @@ function (dojo, declare) {
                     if (ship.track_progress > 0) {
                         slot = ship.track_progress;
                     }
-                    const anim = this.slideToObject(`ship-${ship.ship_id}`, `planet-track-${ship.planet_id}-slot-${slot}`);
-                    await this.bgaPlayDojoAnimation(anim);
+                    // const anim = this.slideToObject(`ship-${ship.ship_id}`, `planet-track-${ship.planet_id}-slot-${slot}`);
+                    // await this.bgaPlayDojoAnimation(anim);
+                    dojo.place( $(`ship-${ship.ship_id}`), `planet-track-${ship.planet_id}-slot-${slot}` );
                 } else {
-                    const anim = this.slideToObject(`ship-${ship.ship_id}`, `planet-surface-${ship.planet_id}`);
-                    await this.bgaPlayDojoAnimation(anim);
+                    // const anim = this.slideToObject(`ship-${ship.ship_id}`, `planet-surface-${ship.planet_id}`);
+                    // await this.bgaPlayDojoAnimation(anim);
+                    dojo.place( $(`ship-${ship.ship_id}`), `planet-surface-${ship.planet_id}` );
                 }
             } else {
-                const anim = this.slideToObject(`ship-${ship.ship_id}`, `ships-hangar-${ship.player_id}`);
-                await this.bgaPlayDojoAnimation(anim);
+                // const anim = this.slideToObject(`ship-${ship.ship_id}`, `ships-hangar-${ship.player_id}`);
+                // await this.bgaPlayDojoAnimation(anim);
+                dojo.place( $(`ship-${ship.ship_id}`), `ships-hangar-${ship.player_id}` );
             }
         },
         
@@ -686,16 +730,27 @@ function (dojo, declare) {
         {
             console.log('notif_energyLevelUpdated', notif);
 
-            const anim = this.slideToObject( `energy-token-${notif.player_id}`, `energy-culture-track-${notif.player_id}-slot-${notif.energy_level}`);
-            await this.bgaPlayDojoAnimation(anim);
+            // const anim = this.slideToObject( `energy-token-${notif.player_id}`, `energy-culture-track-${notif.player_id}-slot-${notif.energy_level}`);
+            // await this.bgaPlayDojoAnimation(anim);
+            dojo.place( $(`energy-token-${notif.player_id}`), `energy-culture-track-${notif.player_id}-slot-${notif.energy_level}` );
         },
 
         notif_cultureLevelUpdated: async function( notif )
         {
             console.log('notif_cultureLevelUpdated', notif);
 
-            const anim = this.slideToObject(`culture-token-${notif.player_id}`, `energy-culture-track-${notif.player_id}-slot-${notif.culture_level}`);
-            await this.bgaPlayDojoAnimation(anim);
+            // const anim = this.slideToObject(`culture-token-${notif.player_id}`, `energy-culture-track-${notif.player_id}-slot-${notif.culture_level}`);
+            // await this.bgaPlayDojoAnimation(anim);
+            dojo.place( $(`culture-token-${notif.player_id}`), `energy-culture-track-${notif.player_id}-slot-${notif.culture_level}` );
+        },
+
+        notif_empireLevelUpdated: async function( notif )
+        {
+            console.log('notif_empireLevelUpdated', notif);
+
+            // const anim = this.slideToObject(`culture-token-${notif.player_id}`, `energy-culture-track-${notif.player_id}-slot-${notif.culture_level}`);
+            // await this.bgaPlayDojoAnimation(anim);
+            dojo.place( $(`empire-token-${notif.player_id}`), `empire-track-${notif.player_id}-slot-${notif.empire_level}` );
         },
 
         notif_playerScoreChanged: async function( notif )

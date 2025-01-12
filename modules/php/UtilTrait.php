@@ -32,6 +32,10 @@ trait UtilTrait {
         );
     }
 
+    function getPlayerCustomCollection(int $playerId) {
+        return $this->getObjectFromDB("SELECT `player_id` `id`, `player_score` `score`, `empire_level`, `energy_level`, `culture_level`, `dice_count` FROM `player` WHERE `player_id` = $playerId");
+    }
+
     function getPlayerScore(int $playerId) {
         return $this->getUniqueIntValueFromDB("SELECT player_score FROM player where `player_id` = $playerId");
     }
@@ -72,6 +76,18 @@ trait UtilTrait {
     function incrementPlayerCulture(int $playerId, int $delta) {
         $this->DbQuery("UPDATE player SET culture_level = LEAST(7, culture_level + $delta) WHERE player_id = $playerId");
         return $this->getUniqueIntValueFromDB("SELECT culture_level FROM player where player_id = $playerId;");
+    }
+
+    function updatePlayerEmpire(int $playerId, int $empireLevel) {
+        $this->DbQuery("UPDATE player SET empire_level = $empireLevel WHERE player_id = $playerId");
+    }
+
+    function incrementPlayerAddDieNextTurn(int $playerId) {
+        $this->DbQuery("UPDATE player SET dice_to_add_next_turn = dice_to_add_next_turn + 1 WHERE player_id = $playerId");
+    }
+
+    function resetPlayerAddDieNextTurn(int $playerId) {
+        $this->DbQuery("UPDATE player SET dice_count = dice_count + dice_to_add_next_turn, dice_to_add_next_turn = 0 WHERE player_id = $playerId");
     }
 
     function getShipsByPlanet(int $planetId) { 

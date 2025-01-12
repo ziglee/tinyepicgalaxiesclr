@@ -69,15 +69,71 @@ trait ActionTrait {
                 $this->gamestate->nextState("moveShip");
                 break;
             case DICE_FACE_ECONOMY:
-                $this->gamestate->nextState("advanceEconomy");
+                if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_ECONOMY)) {
+                    $this->gamestate->nextState("advanceEconomy");
+                } else {
+                    $this->gamestate->nextState("afterActionCheck");
+                }
                 break;
             case DICE_FACE_DIPLOMACY:
-                $this->gamestate->nextState("advanceDiplomacy");
+                if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_DIPLOMACY)) {
+                    $this->gamestate->nextState("advanceDiplomacy");
+                } else {
+                    $this->gamestate->nextState("afterActionCheck");
+                }
                 break;
             case DICE_FACE_EMPIRE:
-                $this->gamestate->nextState("empireAction");
+                $colonizedPlanets = array_keys($this->planetCards->getCardsInLocation('colony', $playerId));
+
+                $playerObj = $this->getPlayerCustomCollection($playerId);
+                $nextEmpireLevel = $playerObj['empire_level'] + 1;
+                if ($nextEmpireLevel == 1) {
+                    $nextEmpireLevel = 2;
+                }
+                $energyLevel = $playerObj['energy_level'];
+                $cultureLevel = $playerObj['culture_level'];
+
+                $canUtilizeColony = count($colonizedPlanets) > 0;
+                $canUpgradeEmpire = $nextEmpireLevel <= 6 && ($energyLevel >= $nextEmpireLevel || $cultureLevel >= $nextEmpireLevel);
+                $canUpgradeEmpireWithEnergy = $nextEmpireLevel <= 6 && $energyLevel >= $nextEmpireLevel;
+                $canUpgradeEmpireWithCulture = $nextEmpireLevel <= 6 && $cultureLevel >= $nextEmpireLevel; 
+
+                if ($canUpgradeEmpire) {
+                    if ($canUtilizeColony) {
+                        $this->gamestate->nextState("chooseEmpireAction");
+                    } else if ($canUpgradeEmpireWithEnergy && $canUpgradeEmpireWithCulture) {
+                        $this->gamestate->nextState("chooseHowToUpgradeEmpire");
+                    } else if ($canUpgradeEmpireWithEnergy) {
+                        $this->upgradeEmpire('energy');
+                        $this->gamestate->nextState("afterActionCheck");
+                    } else if ($canUpgradeEmpireWithCulture) {
+                        $this->upgradeEmpire('culture');
+                        $this->gamestate->nextState("afterActionCheck");
+                    }
+                    break;
+                } else if ($canUtilizeColony) {
+                    $this->gamestate->nextState("chooseEmpireAction");
+                    break;
+                }
+
+                $this->gamestate->nextState("afterActionCheck");
                 break;
         }
+    }
+
+    private function checkPlayerShipsCanAdvance(int $playerId, string $trackType): bool {
+        $ships = $this->getPlayerShips($playerId);
+        foreach ($ships as $ship) {
+            $planetId = $ship['planet_id'];
+            if (!is_null($planetId) && !is_null($ship['track_progress'])) {
+                $planetCard = $this->planetCards->getCard($planetId);
+                $planet = new \PlanetCard($planetCard);
+                if ($planet->info->trackType == $trackType) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public function actRerollDice(#[IntArrayParam] array $ids): void
@@ -165,6 +221,9 @@ trait ActionTrait {
         if ($ship['player_id'] != $player_id) {
             throw new \BgaUserException('You cannot move ships of other players');
         }
+        if ($ship['planet_id'] != $planetId) {
+            throw new \BgaUserException('You cannot move a ship to the same planet of origin');
+        }
 
         $message = '${player_name} ship moved back to its galaxy';
         if (!is_null($planetId)) {
@@ -192,57 +251,7 @@ trait ActionTrait {
     public function actAdvanceEconomy(?int $shipId): void
     {
         if (!is_null($shipId)) {
-            $player_id = (int)$this->getActivePlayerId();
-            $ship = $this->getShipById($shipId);
-
-            if ($ship['player_id'] != $player_id) {
-                throw new \BgaUserException('You cannot move ships of other players');
-            }
-            $planetId = $ship['planet_id'];
-            if (is_null($planetId)) {
-                throw new \BgaUserException('You cannot move ship that is not on a economy orbit');
-            }
-            $planetCard = $this->planetCards->getCard($planetId);
-            $planet = new \PlanetCard($planetCard);
-            if ($planet->info->trackType != PLANET_TRACK_ECONOMY) {
-                throw new \BgaUserException('You cannot move ship that is not on a economy orbit');
-            }
-
-            $currentProgress = $this->advanceShipProgress($shipId);
-            if ($planet->info->trackLength == $currentProgress) {
-                $ships = $this->getShipsByPlanet($planetId);
-                foreach (array_keys($ships) as $thisShipId) { 
-                    $this->updateShipLocation($thisShipId, null, null);
-                    $updatedShip = $this->getShipById($thisShipId);
-                    $this->notifyAllPlayers("shipUpdated", "", [
-                        "ship" => $updatedShip,
-                    ]);
-                }
-
-                $this->planetCards->moveCard($planetId, $player_id);
-                $draftedPlanets = $this->planetCards->pickCardsForLocation(1, 'deck', 'centerrow');
-                $this->notifyAllPlayers("planetColonized", clienttranslate('${player_name} colonized planet ${planet_name}'), [
-                    "player_id" => $player_id,
-                    "player_name" => $this->getActivePlayerName(),
-                    "planet_name" => $planet->info->name,
-                    "planet_id" => $planetId,
-                    "drafted_planet" => new \PlanetCard($draftedPlanets[0]),
-                ]);
-
-                $newScore = $this->incrementPlayerScore($player_id, $planet->info->pointsWorth);
-                $this->notifyAllPlayers("playerScoreChanged", "", [
-                    "player_id" => $player_id,
-                    "player_name" => $this->getActivePlayerName(),
-                    "score" => $newScore,
-                ]);
-            } else {
-                $ship = $this->getShipById($shipId);
-                $this->notifyAllPlayers("shipUpdated", clienttranslate('${player_name} ship advanced economy orbit'), [
-                    "player_id" => $player_id,
-                    "player_name" => $this->getActivePlayerName(),
-                    "ship" => $ship,
-                ]);
-            }
+            $this->advanceShip($shipId, PLANET_TRACK_ECONOMY);
         }
         $this->gamestate->nextState("");
     }
@@ -250,38 +259,130 @@ trait ActionTrait {
     public function actAdvanceDiplomacy(?int $shipId): void
     {
         if (!is_null($shipId)) {
-            $player_id = (int)$this->getActivePlayerId();
-            $ship = $this->getShipById($shipId);
+            $this->advanceShip($shipId, PLANET_TRACK_DIPLOMACY);
+        }
+        $this->gamestate->nextState("");
+    }
 
-            if ($ship['player_id'] != $player_id) {
-                throw new \BgaUserException('You cannot move ships of other players');
-            }
-            if ($ship['player_id'] != $player_id) {
-                throw new \BgaUserException('You cannot move ships of other players');
-            }
-            $planetId = $ship['planet_id'];
-            if (is_null($planetId)) {
+    private function advanceShip(int $shipId, string $planetTrackType) 
+    {
+        $player_id = (int)$this->getActivePlayerId();
+        $ship = $this->getShipById($shipId);
+
+        if ($ship['player_id'] != $player_id) {
+            throw new \BgaUserException('You cannot move ships of other players');
+        }
+        $planetId = $ship['planet_id'];
+        if (is_null($planetId)) {
+            if ($planetTrackType == PLANET_TRACK_ECONOMY) {
+                throw new \BgaUserException('You cannot move ship that is not on a economy orbit');
+            } else {
                 throw new \BgaUserException('You cannot move ship that is not on a diplomacy orbit');
             }
-            $planetCard = $this->planetCards->getCard($planetId);
-            $planet = new \PlanetCard($planetCard);
-            if ($planet->info->trackType != PLANET_TRACK_DIPLOMACY) {
+        }
+        $planetCard = $this->planetCards->getCard($planetId);
+        $planet = new \PlanetCard($planetCard);
+        if ($planet->info->trackType != $planetTrackType) {
+            if ($planetTrackType == PLANET_TRACK_ECONOMY) {
+                throw new \BgaUserException('You cannot move ship that is not on a economy orbit');
+            } else {
                 throw new \BgaUserException('You cannot move ship that is not on a diplomacy orbit');
             }
+        }
 
-            $currentProgress = $this->advanceShipProgress($shipId);
-            if ($planet->info->trackLength == $currentProgress) {
-                // TODO
+        $currentProgress = $this->advanceShipProgress($shipId);
+        if (($planet->info->trackLength + 1) == $currentProgress) {
+            $ships = $this->getShipsByPlanet($planetId);
+            foreach (array_keys($ships) as $thisShipId) { 
+                $this->updateShipLocation($thisShipId, null, null);
+                $updatedShip = $this->getShipById($thisShipId);
+                $this->notifyAllPlayers("shipUpdated", "", [
+                    "ship" => $updatedShip,
+                ]);
             }
 
+            $this->planetCards->moveCard($planetId, "colony", $player_id);
+            $draftedPlanets = $this->planetCards->pickCardsForLocation(1, 'deck', 'centerrow');
+            $this->notifyAllPlayers("planetColonized", clienttranslate('${player_name} colonized planet ${planet_name}'), [
+                "player_id" => $player_id,
+                "player_name" => $this->getActivePlayerName(),
+                "planet_name" => $planet->info->name,
+                "planet_id" => $planetId,
+                "drafted_planet" => new \PlanetCard($draftedPlanets[0]),
+            ]);
+
+            $newScore = $this->incrementPlayerScore($player_id, $planet->info->pointsWorth);
+            $this->notifyAllPlayers("playerScoreChanged", "", [
+                "player_id" => $player_id,
+                "player_name" => $this->getActivePlayerName(),
+                "score" => $newScore,
+            ]);
+        } else {
             $ship = $this->getShipById($shipId);
-            $this->notifyAllPlayers("shipUpdated", clienttranslate('${player_name} ship advanced diplomacy orbit'), [
+            $this->notifyAllPlayers("shipUpdated", clienttranslate('${player_name} ship advanced economy orbit'), [
                 "player_id" => $player_id,
                 "player_name" => $this->getActivePlayerName(),
                 "ship" => $ship,
             ]);
         }
+    }
+
+    public function actUpgradeEmpire(string $type): void
+    {
+        $this->upgradeEmpire($type);
         $this->gamestate->nextState("");
+    }
+
+    private function upgradeEmpire(string $type): void
+    {
+        $playerId = (int)$this->getActivePlayerId();
+
+        $playerObj = $this->getPlayerCustomCollection($playerId);
+        $nextEmpireLevel = $playerObj['empire_level'] + 1;
+        if ($nextEmpireLevel == 1) {
+            $nextEmpireLevel = 2;
+        }
+        $energyLevel = $playerObj['energy_level'];
+        $cultureLevel = $playerObj['culture_level'];
+        $delta = $nextEmpireLevel * (-1);
+
+        switch ($type) {
+            case 'energy':
+                $this->incrementPlayerEnergy($playerId, $delta);
+                $this->notifyAllPlayers("energyLevelUpdated", clienttranslate('${player_name} upgraded empire with energy'), [
+                    "player_id" => $playerId,
+                    "player_name" => $this->getActivePlayerName(),
+                    "energy_level" => $energyLevel + $delta,
+                ]);
+                break;
+            case 'culture':
+                $this->incrementPlayerCulture($playerId, $delta);
+                $this->notifyAllPlayers("cultureLevelUpdated", clienttranslate('${player_name} upgraded empire with  culture'), [
+                    "player_id" => $playerId,
+                    "player_name" => $this->getActivePlayerName(),
+                    "culture_level" => $cultureLevel + $delta,
+                ]);
+                break;
+        }
+
+        $this->updatePlayerEmpire($playerId, $nextEmpireLevel);
+        $this->notifyAllPlayers("empireLevelUpdated", "", [
+            "player_id" => $playerId,
+            "player_name" => $this->getActivePlayerName(),
+            "empire_level" => $nextEmpireLevel,
+        ]);
+
+        switch ($nextEmpireLevel) {
+            case 3:
+            case 5:
+                $this->DbQuery("INSERT INTO ships (player_id) VALUES $playerId");
+                break;
+            case 2:
+            case 4:
+            case 6:
+                $this->incrementPlayerAddDieNextTurn($playerId);
+                break;
+        }
     }
 
     public function actPass(): void

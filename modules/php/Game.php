@@ -181,7 +181,8 @@ class Game extends \Table
         $current_player_id = (int) $this->getCurrentPlayerId();
 
         // Get information about players.
-        $result["players"] = $this->getPlayersCustomCollection();
+        $players = $this->getPlayersCustomCollection();
+        $result["players"] = $players;
 
         // Gather all information about current game situation (visible by player $current_player_id).
         $result['free_reroll_used'] = $this->getGameStateValue(FREE_REROLL_USED);
@@ -199,8 +200,12 @@ class Game extends \Table
             $result['missions'] = $missionCards;
         }
 
-        // Colonized planets in player area      
-        $result['colonizedplanets'] = $this->planetCards->getPlayerHand($current_player_id);
+        // Colonized planets in players area
+        $colonizedPlanetsByPlayerId = [];
+        foreach ($players as $playerId => $player) {
+            $colonizedPlanetsByPlayerId[$playerId] = $this->getPlanetsFromDb($this->planetCards->getCardsInLocation('colony', $playerId));
+        }
+        $result['colonizedplanets'] = $colonizedPlanetsByPlayerId;
   
         // Planets on the center table row
         $result['centerrow'] = $this->getPlanetsFromDb($this->planetCards->getCardsInLocation('centerrow'));

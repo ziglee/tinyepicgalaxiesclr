@@ -48,6 +48,9 @@ trait StateTrait {
     
             $player_id = intval($this->activeNextPlayer());
             self::giveExtraTime($player_id);
+
+            $this->resetPlayerAddDieNextTurn($player_id);
+
             $dice_count = $this->getPlayerDiceCount($player_id);
             $this->rollDice($dice_count);
     
