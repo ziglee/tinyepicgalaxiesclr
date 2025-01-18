@@ -312,18 +312,15 @@ function (dojo, declare) {
                         );
                         break;
                     case 'chooseAction':
-                        this.addActionButton(`actPass-btn`, _('Pass'), () => this.onPassClick());
-                        // this.addActionButton(`actChooseActionActivateDie-btn`, _('Activate die'), () => this.onChooseActionActivateDieClick());
-                        // if (args.canFreeReroll || args.canReroll) {
-                        //     this.addActionButton(`actChooseActionRerollDice-btn`, _('Reroll dice'), () => this.onChooseActionRerollDiceClick());
-                        // }
-                        // if (args.canConvert) {
-                        //     this.addActionButton(`actChooseActionConvertDie-btn`, _('Convert die'), () => this.onChooseActionConvertDieClick());
-                        // }
+                        this.addActionButton(`actPass-btn`, _('Pass'), () => this.onPassClick(), null, false, 'red');
                         break;
                     case 'empireAction':
                         this.addActionButton(`actUpgradeEmpireEnergy-btn`, _('Energy'), () => this.onUpgradeEmpireClick('energy')); 
                         this.addActionButton(`actUpgradeEmpireCulture-btn`, _('Culture'), () => this.onUpgradeEmpireClick('culture'));
+                        break;
+                    case 'decideFollow':
+                        this.addActionButton(`actDecideFollowTrue-btn`, _('Folow'), () => this.onDecideFollowClick(true));
+                        this.addActionButton(`actDecideFollowFalse-btn`, _('Pass'), () => this.onDecideFollowClick(false), null, false, 'red');
                         break;
                 }
             }
@@ -643,6 +640,15 @@ function (dojo, declare) {
         onUpgradeEmpireClick: function(type) {
             this.bgaPerformAction("actUpgradeEmpire", {
                 type: type,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
+        onDecideFollowClick: function(follow) {
+            this.bgaPerformAction("actDecideFollow", {
+                follow: follow,
             }).then(() =>  {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)

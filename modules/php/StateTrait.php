@@ -43,12 +43,14 @@ trait StateTrait {
                 }
             }
             
+            $this->setGameStateValue(FOLLOWERS_COUNT, 0);
             $this->setGameStateValue(FREE_REROLL_USED, 0);
             $this->resetDice();
     
             $player_id = intval($this->activeNextPlayer());
             self::giveExtraTime($player_id);
 
+            $this->setGameStateValue(PLAYER_ID_ACTIVATING_DIE, $player_id);
             $this->resetPlayerAddDieNextTurn($player_id);
 
             $dice_count = $this->getPlayerDiceCount($player_id);
@@ -74,6 +76,25 @@ trait StateTrait {
             return;
         }
         $this->gamestate->nextState("chooseAction");
+    }
+
+    public function stNextFollower(): void {
+        $playerId = intval($this->activeNextPlayer());
+        
+        $followersCount = $this->getGameStateValue(FOLLOWERS_COUNT);
+        if ($followersCount == $this->getPlayersNumber() - 1) {
+            $this->gamestate->nextState("afterActionCheck");
+            return;
+        }
+        
+        $this->setGameStateValue(FOLLOWERS_COUNT, $followersCount + 1);
+        $playerObj = $this->getPlayerObject($playerId);
+        $cultureLevel = $playerObj['culture_level'];
+        if ($cultureLevel > 0) {
+            $this->gamestate->nextState("decideFollow");
+        } else {
+            $this->gamestate->nextState("autoSkip");
+        }
     }
 
     public function stEndScore() {

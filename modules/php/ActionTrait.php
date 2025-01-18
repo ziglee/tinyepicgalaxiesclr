@@ -44,26 +44,17 @@ trait ActionTrait {
         );
 
         $face = $this->getDieFaceById($dieId);
+        $this->setGameStateValue(DIE_FACE_ACTIVATED, $face);
         switch ($face) {
             case DICE_FACE_ENERGY:
                 $shipsInEnergySpotCount = $this->getPlayerShipsInEnergySpotCount($playerId);
-                $newEnergyLevel = $this->incrementPlayerEnergy($playerId, $shipsInEnergySpotCount);
-                $this->notifyAllPlayers("energyLevelUpdated", clienttranslate('${player_name} acquired energy'), [
-                    "player_id" => $playerId,
-                    "player_name" => $this->getActivePlayerName(),
-                    "energy_level" => $newEnergyLevel,
-                ]);
-                $this->gamestate->nextState("afterActionCheck");
+                $this->acquireEnergy($playerId, $shipsInEnergySpotCount);
+                $this->gamestate->nextState("nextFollower");
                 break;
             case DICE_FACE_CULTURE:
                 $shipsInCultureSpotCount = $this->getPlayerShipsInCultureSpotCount($playerId);
-                $newCultureLevel = $this->incrementPlayerCulture($playerId, $shipsInCultureSpotCount);
-                $this->notifyAllPlayers("cultureLevelUpdated", clienttranslate('${player_name} acquired culture'), [
-                    "player_id" => $playerId,
-                    "player_name" => $this->getActivePlayerName(),
-                    "culture_level" => $newCultureLevel,
-                ]);
-                $this->gamestate->nextState("afterActionCheck");
+                $this->acquireCulture($playerId, $shipsInCultureSpotCount);
+                $this->gamestate->nextState("nextFollower");
                 break;
             case DICE_FACE_MOVE_SHIP:
                 $this->gamestate->nextState("moveShip");
@@ -72,20 +63,20 @@ trait ActionTrait {
                 if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_ECONOMY)) {
                     $this->gamestate->nextState("advanceEconomy");
                 } else {
-                    $this->gamestate->nextState("afterActionCheck");
+                    $this->gamestate->nextState("nextFollower");
                 }
                 break;
             case DICE_FACE_DIPLOMACY:
                 if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_DIPLOMACY)) {
                     $this->gamestate->nextState("advanceDiplomacy");
                 } else {
-                    $this->gamestate->nextState("afterActionCheck");
+                    $this->gamestate->nextState("nextFollower");
                 }
                 break;
             case DICE_FACE_EMPIRE:
                 $colonizedPlanets = array_keys($this->planetCards->getCardsInLocation('colony', $playerId));
 
-                $playerObj = $this->getPlayerCustomCollection($playerId);
+                $playerObj = $this->getPlayerObject($playerId);
                 $nextEmpireLevel = $playerObj['empire_level'] + 1;
                 if ($nextEmpireLevel == 1) {
                     $nextEmpireLevel = 2;
@@ -105,10 +96,10 @@ trait ActionTrait {
                         $this->gamestate->nextState("chooseHowToUpgradeEmpire");
                     } else if ($canUpgradeEmpireWithEnergy) {
                         $this->upgradeEmpire('energy');
-                        $this->gamestate->nextState("afterActionCheck");
+                        $this->gamestate->nextState("nextFollower");
                     } else if ($canUpgradeEmpireWithCulture) {
                         $this->upgradeEmpire('culture');
-                        $this->gamestate->nextState("afterActionCheck");
+                        $this->gamestate->nextState("nextFollower");
                     }
                     break;
                 } else if ($canUtilizeColony) {
@@ -116,7 +107,7 @@ trait ActionTrait {
                     break;
                 }
 
-                $this->gamestate->nextState("afterActionCheck");
+                $this->gamestate->nextState("nextFollower");
                 break;
         }
     }
@@ -134,6 +125,24 @@ trait ActionTrait {
             }
         }
         return false;
+    }
+
+    private function acquireEnergy(int $playerId, int $delta) {
+        $newEnergyLevel = $this->incrementPlayerEnergy($playerId, $delta);
+        $this->notifyAllPlayers("energyLevelUpdated", clienttranslate('${player_name} acquired energy'), [
+            "player_id" => $playerId,
+            "player_name" => $this->getActivePlayerName(),
+            "energy_level" => $newEnergyLevel,
+        ]);
+    }
+
+    private function acquireCulture(int $playerId, int $delta) {
+        $newCultureLevel = $this->incrementPlayerCulture($playerId, $delta);
+        $this->notifyAllPlayers("cultureLevelUpdated", clienttranslate('${player_name} acquired culture'), [
+            "player_id" => $playerId,
+            "player_name" => $this->getActivePlayerName(),
+            "culture_level" => $newCultureLevel,
+        ]);
     }
 
     public function actRerollDice(#[IntArrayParam] array $ids): void
@@ -179,7 +188,7 @@ trait ActionTrait {
             );
         }
 
-        $this->gamestate->nextState("executeAction");
+        $this->gamestate->nextState("chooseAnotherAction");
     }
 
     public function actSelectConverterDice(int $die1id, int $die2id): void
@@ -215,15 +224,16 @@ trait ActionTrait {
     public function actMoveShip(int $shipId, ?int $planetId, bool $isTrack): void
     {
         $player_id = (int)$this->getActivePlayerId();
-        $this->updateShipLocation($shipId, $planetId, $isTrack ? 0 : null);
 
         $ship = $this->getShipById($shipId);
         if ($ship['player_id'] != $player_id) {
             throw new \BgaUserException('You cannot move ships of other players');
         }
-        if ($ship['planet_id'] != $planetId) {
-            throw new \BgaUserException('You cannot move a ship to the same planet of origin');
+        if ($ship['planet_id'] == $planetId) {
+            throw new \BgaUserException('You cannot move the ship to the same planet of origin');
         }
+
+        $this->updateShipLocation($shipId, $planetId, $isTrack ? 0 : null);
 
         $message = '${player_name} ship moved back to its galaxy';
         if (!is_null($planetId)) {
@@ -232,20 +242,19 @@ trait ActionTrait {
             $message = '${player_name} ship moved to surface of '. $planet->info->name;
             if ($isTrack) {
                 $message = '${player_name} ship moved to orbit of '. $planet->info->name;
-            } else {
-                $this->executePlanetAction($player_id, $planetId);
             }
         }
-
-        $ship = $this->getShipById($shipId);
-
         $this->notifyAllPlayers("shipUpdated", clienttranslate($message), [
             "player_id" => $player_id,
             "player_name" => $this->getActivePlayerName(),
-            "ship" => $ship,
+            "ship" => $this->getShipById($shipId),
         ]);
 
-        $this->gamestate->nextState("");
+        if (!is_null($planetId) && !$isTrack) {
+            $this->executePlanetAction($player_id, $planetId);
+        } else {
+            $this->gamestate->nextState("nextFollower");
+        }
     }
 
     public function actAdvanceEconomy(?int $shipId): void
@@ -337,7 +346,7 @@ trait ActionTrait {
     {
         $playerId = (int)$this->getActivePlayerId();
 
-        $playerObj = $this->getPlayerCustomCollection($playerId);
+        $playerObj = $this->getPlayerObject($playerId);
         $nextEmpireLevel = $playerObj['empire_level'] + 1;
         if ($nextEmpireLevel == 1) {
             $nextEmpireLevel = 2;
@@ -357,7 +366,7 @@ trait ActionTrait {
                 break;
             case 'culture':
                 $this->incrementPlayerCulture($playerId, $delta);
-                $this->notifyAllPlayers("cultureLevelUpdated", clienttranslate('${player_name} upgraded empire with  culture'), [
+                $this->notifyAllPlayers("cultureLevelUpdated", clienttranslate('${player_name} upgraded empire with culture'), [
                     "player_id" => $playerId,
                     "player_name" => $this->getActivePlayerName(),
                     "culture_level" => $cultureLevel + $delta,
@@ -409,5 +418,80 @@ trait ActionTrait {
     }
 
     private function executePlanetAction(int $playerId, int $planetId) {
+        $planetCard = $this->planetCards->getCard($planetId);
+        $planet = new \PlanetCard($planetCard);
+        
+        switch ($planet->type_arg) {
+            case PLANET_ANDELLOUXIAN6:
+                // TODO
+                break;
+            case PLANET_AUGHMOORE:
+                $shipsInGalaxyCount = $this->getPlayerShipsInGalaxyCount($playerId);
+                $this->acquireCulture($playerId, $shipsInGalaxyCount);
+                $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_BIRKOMIUS:
+                // TODO
+                break;
+            case PLANET_BISSCHOP:
+                // TODO
+                break;
+            // TODO every other planet
+        }
+    }
+    
+    public function actDecideFollow(bool $follow): void
+    {
+        if (!$follow) {
+            $this->gamestate->nextState("nextFollower");
+            return;
+        }
+
+        $playerId = (int)$this->getActivePlayerId();
+
+        $playerObj = $this->getPlayerObject($playerId);
+        $cultureLevel = $playerObj['culture_level'];
+
+        $this->incrementPlayerCulture($playerId, -1);
+        $this->notifyAllPlayers("cultureLevelUpdated", clienttranslate('${player_name} decided to follow last action'), [
+            "player_id" => $playerId,
+            "player_name" => $this->getActivePlayerName(),
+            "culture_level" => $cultureLevel - 1,
+        ]);
+
+        $face = $this->getGameStateValue(DIE_FACE_ACTIVATED);
+        switch ($face) {
+            case DICE_FACE_ENERGY:
+                $shipsInEnergySpotCount = $this->getPlayerShipsInEnergySpotCount($playerId);
+                $this->acquireEnergy($playerId, $shipsInEnergySpotCount);
+                $this->gamestate->nextState("nextFollower");
+                break;
+            case DICE_FACE_CULTURE:
+                $shipsInCultureSpotCount = $this->getPlayerShipsInCultureSpotCount($playerId);
+                $this->acquireCulture($playerId, $shipsInCultureSpotCount);
+                $this->gamestate->nextState("nextFollower");
+                break;
+            case DICE_FACE_MOVE_SHIP:
+                $this->gamestate->nextState("moveShip");
+                break;
+            case DICE_FACE_ECONOMY:
+                if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_ECONOMY)) {
+                    $this->gamestate->nextState("advanceEconomy");
+                } else {
+                    $this->gamestate->nextState("nextFollower");
+                }
+                break;
+            case DICE_FACE_DIPLOMACY:
+                if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_DIPLOMACY)) {
+                    $this->gamestate->nextState("advanceDiplomacy");
+                } else {
+                    $this->gamestate->nextState("nextFollower");
+                }
+                break;
+            case DICE_FACE_EMPIRE:
+                // TODO
+                $this->gamestate->nextState("nextFollower");
+                break;
+        }
     }
 }

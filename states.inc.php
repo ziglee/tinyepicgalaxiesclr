@@ -110,14 +110,15 @@ $playerActionsGameStates = [
             "actPass",
         ],
         "transitions" => [
-            "executeAction" => ST_PLAYER_CHOOSE_ACTION, 
+            "chooseAnotherAction" => ST_PLAYER_CHOOSE_ACTION, 
             "afterActionCheck" => ST_AFTER_ACTION_CHECK,  
             "selectNewDieFace" => ST_PLAYER_CONVERT_DIE,
             "moveShip" => ST_PLAYER_MOVE_SHIP,
             "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
             "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
-            "chooseEmpireAction" => ST_PLAYER_CHOOSE_ACTION,
+            "chooseEmpireAction" => ST_PLAYER_CHOOSE_ACTION, // TODO
             "chooseHowToUpgradeEmpire" => ST_PLAYER_UPGRADE_EMPIRE,
+            "nextFollower" => ST_NEXT_FOLLOWER,
             "pass" => ST_NEXT_PLAYER
         ]
     ],
@@ -146,7 +147,7 @@ $playerActionsGameStates = [
             "actMoveShip", 
         ],
         "transitions" => [
-            "" => ST_AFTER_ACTION_CHECK, 
+            "nextFollower" => ST_NEXT_FOLLOWER,
         ]
     ],
 
@@ -160,7 +161,7 @@ $playerActionsGameStates = [
             "actAdvanceEconomy", 
         ],
         "transitions" => [
-            "" => ST_AFTER_ACTION_CHECK, 
+            "" => ST_NEXT_FOLLOWER, 
         ]
     ],
 
@@ -180,7 +181,7 @@ $playerActionsGameStates = [
 
     ST_PLAYER_UPGRADE_EMPIRE => [
         "name" => "upgradeEmpire",
-        "description" => clienttranslate('${actplayer} must select energy or culture to upgrade your empire'), 
+        "description" => clienttranslate('${actplayer} must select energy or culture to upgrade his empire'), 
         "descriptionmyturn" => clienttranslate('${you} must select energy or culture to upgrade your empire'),
         "type" => "activeplayer",
         "possibleactions" => [
@@ -189,7 +190,23 @@ $playerActionsGameStates = [
         "transitions" => [
             "" => ST_AFTER_ACTION_CHECK, 
         ]
-    ]
+    ],
+
+    ST_PLAYER_DECIDE_FOLLOW => [
+        "name" => "decideFollow",
+        "description" => clienttranslate('${actplayer} must decide about following the last action'), 
+        "descriptionmyturn" => clienttranslate('${you} must decide about following the last action spending 1 culture'),
+        "type" => "activeplayer",
+        "possibleactions" => [
+            "actDecideFollow", 
+        ],
+        "transitions" => [
+            "moveShip" => ST_PLAYER_MOVE_SHIP,
+            "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
+            "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
+            "nextFollower" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
 ];
 
 $gameGameStates = [
@@ -211,6 +228,18 @@ $gameGameStates = [
         "transitions" => [
             "nextPlayer" => ST_PLAYER_CHOOSE_ACTION,
             "endScore" => ST_END_SCORE 
+        ]
+    ],
+
+    ST_NEXT_FOLLOWER => [
+        "name" => "nextFollower",
+        "description" => '',
+        "type" => "game",
+        "action" => "stNextFollower",
+        "transitions" => [
+            "decideFollow" => ST_PLAYER_DECIDE_FOLLOW,
+            "autoSkip" => ST_NEXT_FOLLOWER,
+            "afterActionCheck" => ST_AFTER_ACTION_CHECK,
         ]
     ],
 

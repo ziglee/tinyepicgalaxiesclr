@@ -32,7 +32,7 @@ trait UtilTrait {
         );
     }
 
-    function getPlayerCustomCollection(int $playerId) {
+    function getPlayerObject(int $playerId) {
         return $this->getObjectFromDB("SELECT `player_id` `id`, `player_score` `score`, `empire_level`, `energy_level`, `culture_level`, `dice_count` FROM `player` WHERE `player_id` = $playerId");
     }
 
@@ -47,6 +47,10 @@ trait UtilTrait {
     function incrementPlayerScore(int $playerId, int $delta) {
         $this->DbQuery("UPDATE player SET player_score = player_score + $delta WHERE player_id = $playerId");
         return $this->getPlayerScore($playerId);
+    }
+
+    function getPlayerShipsInGalaxyCount(int $playerId) {
+        return $this->getUniqueIntValueFromDB("SELECT COUNT(s.ship_id) FROM ships as s where s.player_id = $playerId AND s.planet_id IS NULL;");
     }
 
     function getPlayerShipsInEnergySpotCount(int $playerId) {

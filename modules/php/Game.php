@@ -48,6 +48,9 @@ class Game extends \Table
         $this->initGameStateLabels([
             FREE_REROLL_USED => 11,
             LAST_TURN => 12,
+            DIE_FACE_ACTIVATED => 13,
+            PLAYER_ID_ACTIVATING_DIE => 14,
+            FOLLOWERS_COUNT => 15,
         ]);
 
         $this->missionCards = $this->getNew("module.common.deck");
@@ -106,6 +109,9 @@ class Game extends \Table
         // Init global values with their initial values.
         $this->setGameStateInitialValue(FREE_REROLL_USED, 0);
         $this->setGameStateInitialValue(LAST_TURN, 0);
+        $this->setGameStateInitialValue(DIE_FACE_ACTIVATED, 0);
+        $this->setGameStateInitialValue(PLAYER_ID_ACTIVATING_DIE, 0);
+        $this->setGameStateInitialValue(FOLLOWERS_COUNT, 0);
 
         $playerCount = count($players);
 
@@ -139,14 +145,12 @@ class Game extends \Table
         if ($playerCount == 5) {
             $deal_amount = 6;
         }
-        $initialCards = $this->planetCards->pickCardsForLocation($deal_amount, 'deck', 'centerrow');
+        $this->planetCards->pickCardsForLocation($deal_amount, 'deck', 'centerrow');
 
         // Draw missions cards
         foreach ($players as $player_id => $player) {
             $this->missionCards->pickCards(2, 'deck', $player_id);
         }
-
-        // Notify players about initial cards ?
 
         // Init game statistics.
         // NOTE: statistics used in this file must be defined in your `stats.inc.php` file.
