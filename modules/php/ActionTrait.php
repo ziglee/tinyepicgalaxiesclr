@@ -74,40 +74,7 @@ trait ActionTrait {
                 }
                 break;
             case DICE_FACE_EMPIRE:
-                $colonizedPlanets = array_keys($this->planetCards->getCardsInLocation('colony', $playerId));
-
-                $playerObj = $this->getPlayerObject($playerId);
-                $nextEmpireLevel = $playerObj['empire_level'] + 1;
-                if ($nextEmpireLevel == 1) {
-                    $nextEmpireLevel = 2;
-                }
-                $energyLevel = $playerObj['energy_level'];
-                $cultureLevel = $playerObj['culture_level'];
-
-                $canUtilizeColony = count($colonizedPlanets) > 0;
-                $canUpgradeEmpire = $nextEmpireLevel <= 6 && ($energyLevel >= $nextEmpireLevel || $cultureLevel >= $nextEmpireLevel);
-                $canUpgradeEmpireWithEnergy = $nextEmpireLevel <= 6 && $energyLevel >= $nextEmpireLevel;
-                $canUpgradeEmpireWithCulture = $nextEmpireLevel <= 6 && $cultureLevel >= $nextEmpireLevel; 
-
-                if ($canUpgradeEmpire) {
-                    if ($canUtilizeColony) {
-                        $this->gamestate->nextState("chooseEmpireAction");
-                    } else if ($canUpgradeEmpireWithEnergy && $canUpgradeEmpireWithCulture) {
-                        $this->gamestate->nextState("chooseHowToUpgradeEmpire");
-                    } else if ($canUpgradeEmpireWithEnergy) {
-                        $this->upgradeEmpire('energy');
-                        $this->gamestate->nextState("nextFollower");
-                    } else if ($canUpgradeEmpireWithCulture) {
-                        $this->upgradeEmpire('culture');
-                        $this->gamestate->nextState("nextFollower");
-                    }
-                    break;
-                } else if ($canUtilizeColony) {
-                    $this->gamestate->nextState("chooseEmpireAction");
-                    break;
-                }
-
-                $this->gamestate->nextState("nextFollower");
+                $this->executeEmpireAction($playerId);
                 break;
         }
     }
@@ -230,7 +197,18 @@ trait ActionTrait {
             throw new \BgaUserException('You cannot move ships of other players');
         }
         if ($ship['planet_id'] == $planetId) {
-            throw new \BgaUserException('You cannot move the ship to the same planet of origin');
+            throw new \BgaUserException('You cannot move the ship to the same place of origin');
+        }
+        if (!is_null($planetId)) {
+            $ships = $this->getPlayerShips($player_id);
+            foreach ($ships as $loopShipId => $loopShip) {
+                if ($loopShipId != $shipId && (
+                    (is_null($loopShip['track_progress']) && !$isTrack) ||
+                    (!is_null($loopShip['track_progress']) && $isTrack)
+                )) {
+                    throw new \BgaUserException('You cannot move the ship where you already have another ship');
+                }
+            }
         }
 
         $this->updateShipLocation($shipId, $planetId, $isTrack ? 0 : null);
@@ -424,6 +402,7 @@ trait ActionTrait {
         switch ($planet->type_arg) {
             case PLANET_ANDELLOUXIAN6:
                 // TODO
+            $this->gamestate->nextState("nextFollower");
                 break;
             case PLANET_AUGHMOORE:
                 $shipsInGalaxyCount = $this->getPlayerShipsInGalaxyCount($playerId);
@@ -432,11 +411,17 @@ trait ActionTrait {
                 break;
             case PLANET_BIRKOMIUS:
                 // TODO
+                $this->gamestate->nextState("nextFollower");
                 break;
             case PLANET_BISSCHOP:
                 // TODO
+                $this->gamestate->nextState("nextFollower");
                 break;
             // TODO every other planet
+            default:
+                // TODO remove default case
+                $this->gamestate->nextState("nextFollower");
+                break;
         }
     }
     
@@ -489,9 +474,45 @@ trait ActionTrait {
                 }
                 break;
             case DICE_FACE_EMPIRE:
-                // TODO
-                $this->gamestate->nextState("nextFollower");
+                $this->executeEmpireAction($playerId);
                 break;
         }
+    }
+
+    private function executeEmpireAction(int $playerId) {
+        $colonizedPlanets = array_keys($this->planetCards->getCardsInLocation('colony', $playerId));
+
+        $playerObj = $this->getPlayerObject($playerId);
+        $nextEmpireLevel = $playerObj['empire_level'] + 1;
+        if ($nextEmpireLevel == 1) {
+            $nextEmpireLevel = 2;
+        }
+        $energyLevel = $playerObj['energy_level'];
+        $cultureLevel = $playerObj['culture_level'];
+
+        $canUtilizeColony = count($colonizedPlanets) > 0;
+        $canUpgradeEmpire = $nextEmpireLevel <= 6 && ($energyLevel >= $nextEmpireLevel || $cultureLevel >= $nextEmpireLevel);
+        $canUpgradeEmpireWithEnergy = $nextEmpireLevel <= 6 && $energyLevel >= $nextEmpireLevel;
+        $canUpgradeEmpireWithCulture = $nextEmpireLevel <= 6 && $cultureLevel >= $nextEmpireLevel; 
+
+        if ($canUpgradeEmpire) {
+            if ($canUtilizeColony) {
+                $this->gamestate->nextState("chooseEmpireAction");
+            } else if ($canUpgradeEmpireWithEnergy && $canUpgradeEmpireWithCulture) {
+                $this->gamestate->nextState("chooseHowToUpgradeEmpire");
+            } else if ($canUpgradeEmpireWithEnergy) {
+                $this->upgradeEmpire('energy');
+                $this->gamestate->nextState("nextFollower");
+            } else if ($canUpgradeEmpireWithCulture) {
+                $this->upgradeEmpire('culture');
+                $this->gamestate->nextState("nextFollower");
+            }
+            return;
+        } else if ($canUtilizeColony) {
+            $this->gamestate->nextState("chooseEmpireAction");
+            return;
+        }
+
+        $this->gamestate->nextState("nextFollower");
     }
 }

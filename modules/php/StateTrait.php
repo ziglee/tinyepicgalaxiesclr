@@ -43,7 +43,6 @@ trait StateTrait {
                 }
             }
             
-            $this->setGameStateValue(FOLLOWERS_COUNT, 0);
             $this->setGameStateValue(FREE_REROLL_USED, 0);
             $this->resetDice();
     
@@ -71,6 +70,7 @@ trait StateTrait {
     }
 
     public function stAfterActionCheck(): void {
+        $this->setGameStateValue(FOLLOWERS_COUNT, 0);
         if ($this->isAllRolledDiceUsed()) {
             $this->gamestate->nextState("nextPlayer");
             return;
@@ -80,7 +80,7 @@ trait StateTrait {
 
     public function stNextFollower(): void {
         $playerId = intval($this->activeNextPlayer());
-        
+
         $followersCount = $this->getGameStateValue(FOLLOWERS_COUNT);
         if ($followersCount == $this->getPlayersNumber() - 1) {
             $this->gamestate->nextState("afterActionCheck");
