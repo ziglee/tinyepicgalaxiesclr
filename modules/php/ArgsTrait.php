@@ -14,7 +14,7 @@ trait ArgsTrait {
         ];
     }
 
-    function argChooseAction() {
+    public function argChooseAction() {
         $playerId = intval(self::getActivePlayerId());
         return [
             "canFreeReroll" => $this->getGameStateValue(FREE_REROLL_USED) == 0,
@@ -23,7 +23,7 @@ trait ArgsTrait {
         ];
     }
 
-    function argConvertDie() {
+    public function argConvertDie() {
         return [
             "converterDice" => array_values(
                 array_filter(
@@ -36,14 +36,14 @@ trait ArgsTrait {
         ];
     }
 
-    function argMoveShip() {
+    public function argMoveShip() {
         $playerId = intval(self::getActivePlayerId());
         return [
             "selectableShips" => $this->getPlayerShips($playerId),
         ];
     }
 
-    function argAdvanceEconomy() {
+    public function argAdvanceEconomy() {
         $playerId = intval(self::getActivePlayerId());
         $ships = $this->getPlayerShips($playerId);
         return [
@@ -51,11 +51,31 @@ trait ArgsTrait {
         ];
     }
 
-    function argAdvanceDiplomacy() {
+    public function argAdvanceDiplomacy() {
         $playerId = intval(self::getActivePlayerId());
         $ships = $this->getPlayerShips($playerId);
         return [
             "selectableShips" => $ships, // TODO: FILTER
+        ];
+    }
+
+    public function argChooseEmpireAction() {
+        $playerId = intval(self::getActivePlayerId());
+        $playerObj = $this->getPlayerObject($playerId);
+        $nextEmpireLevel = $playerObj['empire_level'] + 1;
+        if ($nextEmpireLevel == 1) {
+            $nextEmpireLevel = 2;
+        }
+        $energyLevel = $playerObj['energy_level'];
+        $cultureLevel = $playerObj['culture_level'];
+        $canUpgradeEmpireWithEnergy = $nextEmpireLevel <= 6 && $energyLevel >= $nextEmpireLevel;
+        $canUpgradeEmpireWithCulture = $nextEmpireLevel <= 6 && $cultureLevel >= $nextEmpireLevel;
+        $colonizedPlanets = array_keys($this->planetCards->getCardsInLocation('colony', $playerId));
+        $canUtilizeColony = count($colonizedPlanets) > 0;
+        return [
+            "canUpgradeEmpireWithEnergy" => $canUpgradeEmpireWithEnergy,
+            "canUpgradeEmpireWithCulture" => $canUpgradeEmpireWithCulture,
+            "canUtilizeColony" => $canUtilizeColony,
         ];
     }
 }

@@ -116,8 +116,7 @@ $playerActionsGameStates = [
             "moveShip" => ST_PLAYER_MOVE_SHIP,
             "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
             "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
-            "chooseEmpireAction" => ST_PLAYER_CHOOSE_ACTION, // TODO
-            "chooseHowToUpgradeEmpire" => ST_PLAYER_UPGRADE_EMPIRE,
+            "chooseEmpireAction" => ST_PLAYER_CHOOSE_EMPIRE_ACTION,
             "nextFollower" => ST_NEXT_FOLLOWER,
             "pass" => ST_NEXT_PLAYER
         ]
@@ -125,8 +124,8 @@ $playerActionsGameStates = [
 
     ST_PLAYER_CONVERT_DIE => [
         "name" => "convertDie",
-        "description" => clienttranslate('${actplayer} select die to convert and its new face'), 
-        "descriptionmyturn" => clienttranslate('${you} select die to convert and its new face'),
+        "description" => clienttranslate('${actplayer} must select die to convert and its new face'), 
+        "descriptionmyturn" => clienttranslate('${you} must select die to convert and its new face'),
         "type" => "activeplayer",
         "args" => "argConvertDie",
         "possibleactions" => [
@@ -179,16 +178,17 @@ $playerActionsGameStates = [
         ]
     ],
 
-    ST_PLAYER_UPGRADE_EMPIRE => [
-        "name" => "upgradeEmpire",
-        "description" => clienttranslate('${actplayer} must select energy or culture to upgrade his empire'), 
-        "descriptionmyturn" => clienttranslate('${you} must select energy or culture to upgrade your empire'),
+    ST_PLAYER_CHOOSE_EMPIRE_ACTION => [
+        "name" => "chooseEmpireAction",
+        "description" => clienttranslate('${actplayer} must select an empire action'), 
+        "descriptionmyturn" => clienttranslate('${you} must decide between upgrading your empire or using a colonized planet'),
         "type" => "activeplayer",
+        "args" => "argChooseEmpireAction",
         "possibleactions" => [
-            "actUpgradeEmpire", 
+            "actDecideEmpireAction", 
         ],
         "transitions" => [
-            "" => ST_AFTER_ACTION_CHECK, 
+            "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
 

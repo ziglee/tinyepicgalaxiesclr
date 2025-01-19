@@ -300,9 +300,9 @@ function (dojo, declare) {
         onUpdateActionButtons: function( stateName, args )
         {
             console.log( 'onUpdateActionButtons: '+stateName, args );
-                      
+            
             if( this.isCurrentPlayerActive() )
-            {            
+            {
                 switch( stateName )
                 {
                     case 'privateChooseMission':
@@ -314,17 +314,28 @@ function (dojo, declare) {
                     case 'chooseAction':
                         this.addActionButton(`actPass-btn`, _('Pass'), () => this.onPassClick(), null, false, 'red');
                         break;
-                    case 'empireAction':
-                        this.addActionButton(`actUpgradeEmpireEnergy-btn`, _('Energy'), () => this.onUpgradeEmpireClick('energy')); 
-                        this.addActionButton(`actUpgradeEmpireCulture-btn`, _('Culture'), () => this.onUpgradeEmpireClick('culture'));
-                        break;
                     case 'decideFollow':
                         this.addActionButton(`actDecideFollowTrue-btn`, _('Folow'), () => this.onDecideFollowClick(true));
                         this.addActionButton(`actDecideFollowFalse-btn`, _('Pass'), () => this.onDecideFollowClick(false), null, false, 'red');
                         break;
+                    case 'chooseEmpireAction':
+                        if (args.canUpgradeEmpireWithEnergy) {
+                            this.addActionButton(`actUpgradeEmpireUsingEnergy-btn`, _('Upgrade empire using energy'), () => this.actDecideEmpireAction(null, 'energy'));
+                        }
+                        if (args.canUpgradeEmpireWithCulture) {
+                            this.addActionButton(`actUpgradeEmpireUsingCulture-btn`, _('Upgrade empire using culture'), () => this.actDecideEmpireAction(null, 'culture'));
+                        }
+                        if (this.isCurrentPlayerActive()) {
+                            if (!args.canUtilizeColony) {
+                                this.statusBar.setTitle(_('${you} must decide how to upgrade your empire'), args);
+                            } else if (!args.canUpgradeEmpireWithEnergy && !args.canUpgradeEmpireWithCulture) {
+                                this.statusBar.setTitle(_('${you} must select a colonized planet'), args);
+                            }
+                        }
+                        break;
                 }
             }
-        },        
+        },
 
         ///////////////////////////////////////////////////
         //// Utility methods
@@ -637,8 +648,9 @@ function (dojo, declare) {
             });
         },
 
-        onUpgradeEmpireClick: function(type) {
-            this.bgaPerformAction("actUpgradeEmpire", {
+        actDecideEmpireAction: function(planetId, type) {
+            this.bgaPerformAction("actDecideEmpireAction", {
+                planetId: planetId,
                 type: type,
             }).then(() =>  {
                 // What to do after the server call if it succeeded

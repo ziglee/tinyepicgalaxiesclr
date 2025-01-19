@@ -60,14 +60,14 @@ trait ActionTrait {
                 $this->gamestate->nextState("moveShip");
                 break;
             case DICE_FACE_ECONOMY:
-                if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_ECONOMY)) {
+                if ($this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_ECONOMY)) {
                     $this->gamestate->nextState("advanceEconomy");
                 } else {
                     $this->gamestate->nextState("nextFollower");
                 }
                 break;
             case DICE_FACE_DIPLOMACY:
-                if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_DIPLOMACY)) {
+                if ($this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_DIPLOMACY)) {
                     $this->gamestate->nextState("advanceDiplomacy");
                 } else {
                     $this->gamestate->nextState("nextFollower");
@@ -202,7 +202,7 @@ trait ActionTrait {
         if (!is_null($planetId)) {
             $ships = $this->getPlayerShips($player_id);
             foreach ($ships as $loopShipId => $loopShip) {
-                if ($loopShipId != $shipId && (
+                if ($loopShipId != $shipId && $loopShip['planet_id'] == $planetId && (
                     (is_null($loopShip['track_progress']) && !$isTrack) ||
                     (!is_null($loopShip['track_progress']) && $isTrack)
                 )) {
@@ -312,12 +312,6 @@ trait ActionTrait {
                 "ship" => $ship,
             ]);
         }
-    }
-
-    public function actUpgradeEmpire(string $type): void
-    {
-        $this->upgradeEmpire($type);
-        $this->gamestate->nextState("");
     }
 
     private function upgradeEmpire(string $type): void
@@ -460,14 +454,14 @@ trait ActionTrait {
                 $this->gamestate->nextState("moveShip");
                 break;
             case DICE_FACE_ECONOMY:
-                if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_ECONOMY)) {
+                if ($this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_ECONOMY)) {
                     $this->gamestate->nextState("advanceEconomy");
                 } else {
                     $this->gamestate->nextState("nextFollower");
                 }
                 break;
             case DICE_FACE_DIPLOMACY:
-                if (!$this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_DIPLOMACY)) {
+                if ($this->checkPlayerShipsCanAdvance($playerId, PLANET_TRACK_DIPLOMACY)) {
                     $this->gamestate->nextState("advanceDiplomacy");
                 } else {
                     $this->gamestate->nextState("nextFollower");
@@ -479,7 +473,7 @@ trait ActionTrait {
         }
     }
 
-    private function executeEmpireAction(int $playerId) {
+    private function executeEmpireAction(int $playerId): void {
         $colonizedPlanets = array_keys($this->planetCards->getCardsInLocation('colony', $playerId));
 
         $playerObj = $this->getPlayerObject($playerId);
@@ -491,15 +485,17 @@ trait ActionTrait {
         $cultureLevel = $playerObj['culture_level'];
 
         $canUtilizeColony = count($colonizedPlanets) > 0;
-        $canUpgradeEmpire = $nextEmpireLevel <= 6 && ($energyLevel >= $nextEmpireLevel || $cultureLevel >= $nextEmpireLevel);
-        $canUpgradeEmpireWithEnergy = $nextEmpireLevel <= 6 && $energyLevel >= $nextEmpireLevel;
-        $canUpgradeEmpireWithCulture = $nextEmpireLevel <= 6 && $cultureLevel >= $nextEmpireLevel; 
+        $reachedMaxEmpireLevel = $nextEmpireLevel == 6;
+        $canUpgradeEmpireWithEnergy = !$reachedMaxEmpireLevel && $energyLevel >= $nextEmpireLevel;
+        $canUpgradeEmpireWithCulture = !$reachedMaxEmpireLevel && $cultureLevel >= $nextEmpireLevel; 
+        $canUpgradeEmpire = $canUpgradeEmpireWithEnergy || $canUpgradeEmpireWithCulture;
 
-        if ($canUpgradeEmpire) {
-            if ($canUtilizeColony) {
+        if ($canUtilizeColony) {
+            $this->gamestate->nextState("chooseEmpireAction");
+            return;
+        } else if ($canUpgradeEmpire) {
+            if ($canUpgradeEmpireWithEnergy && $canUpgradeEmpireWithCulture) {
                 $this->gamestate->nextState("chooseEmpireAction");
-            } else if ($canUpgradeEmpireWithEnergy && $canUpgradeEmpireWithCulture) {
-                $this->gamestate->nextState("chooseHowToUpgradeEmpire");
             } else if ($canUpgradeEmpireWithEnergy) {
                 $this->upgradeEmpire('energy');
                 $this->gamestate->nextState("nextFollower");
@@ -508,11 +504,18 @@ trait ActionTrait {
                 $this->gamestate->nextState("nextFollower");
             }
             return;
-        } else if ($canUtilizeColony) {
-            $this->gamestate->nextState("chooseEmpireAction");
-            return;
         }
 
         $this->gamestate->nextState("nextFollower");
+    }
+    
+    public function actDecideEmpireAction(?int $planetId, string $type): void {
+        if ($planetId !== null) {
+            $playerId = (int)$this->getActivePlayerId();
+            $this->executePlanetAction($playerId, $planetId);
+        } else {
+            $this->upgradeEmpire($type);
+            $this->gamestate->nextState("nextFollower");
+        }
     }
 }
