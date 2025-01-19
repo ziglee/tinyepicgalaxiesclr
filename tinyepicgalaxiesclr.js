@@ -219,6 +219,10 @@ function (dojo, declare) {
  
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
+            
+            if (gamedatas.lastTurn) {
+                this.notif_lastTurn(false);
+            }
 
             console.log( "Ending game setup" );
         },
@@ -796,6 +800,14 @@ function (dojo, declare) {
             dojo.destroy(`planet-${notif.planet_id}`);
             const draftedPlanet = notif.drafted_planet;
             this.addPlanetToCenterRow(draftedPlanet);
+        },
+
+        notif_lastTurn: async function( animate )
+        {
+            console.log('notif_lastTurn');
+            
+            if (animate === void 0) { animate = true; }
+            dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text ".concat(animate ? 'animate' : '', "\">").concat(_("This is the final round!"), "</span>\n        </div>"), 'page-title');
         },
    });
 });

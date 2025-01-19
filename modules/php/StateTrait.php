@@ -36,7 +36,7 @@ trait StateTrait {
             if ($lastTurn == 0) {
                 // check if last turn is started
                 $playersMaxScore = $this->getPlayersMaxScore();
-                if ($playersMaxScore > 21) {
+                if ($playersMaxScore >= 21) {
                     self::setGameStateValue(LAST_TURN, $player_id);
 
                     self::notifyAllPlayers('lastTurn', clienttranslate('Starting final turn!'), []);

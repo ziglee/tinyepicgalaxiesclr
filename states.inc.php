@@ -174,7 +174,7 @@ $playerActionsGameStates = [
             "actAdvanceDiplomacy", 
         ],
         "transitions" => [
-            "" => ST_AFTER_ACTION_CHECK, 
+            "" => ST_NEXT_FOLLOWER, 
         ]
     ],
 
