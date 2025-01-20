@@ -43,7 +43,6 @@ trait StateTrait {
                 }
             }
             
-            $this->setGameStateValue(TURN_OWNER_ID, $player_id);
             $this->setGameStateValue(BIRKOMIUS_TRIGGERED, 0);
             $this->setGameStateValue(BISSCHOP_TRIGGERED, 0);
             $this->setGameStateValue(NIBIRU_TRIGGERED, 0);
@@ -51,6 +50,7 @@ trait StateTrait {
             $this->resetDice();
     
             $player_id = intval($this->activeNextPlayer());
+            $this->setGameStateValue(TURN_OWNER_ID, $player_id);
             self::giveExtraTime($player_id);
 
             $this->setGameStateValue(PLAYER_ID_ACTIVATING_DIE, $player_id);

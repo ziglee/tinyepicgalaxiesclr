@@ -403,11 +403,17 @@ trait ActionTrait {
                 $this->gamestate->nextState("nextFollower");
                 break;
             case PLANET_BIRKOMIUS:
-                $this->setGameStateValue(BIRKOMIUS_TRIGGERED, 1);
+                $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
+                if ($turnOwnerId == $playerId) {
+                    $this->setGameStateValue(BIRKOMIUS_TRIGGERED, 1);
+                }
                 $this->gamestate->nextState("nextFollower");
                 break;
             case PLANET_BISSCHOP:
-                $this->setGameStateValue(BISSCHOP_TRIGGERED, 1);
+                $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
+                if ($turnOwnerId == $playerId) {
+                    $this->setGameStateValue(BISSCHOP_TRIGGERED, 1);
+                }
                 $this->gamestate->nextState("nextFollower");
                 break;
             case PLANET_GLEAMZANIER:
@@ -485,20 +491,12 @@ trait ActionTrait {
             return;
         }
 
-        $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
-        if ($this->getGameStateValue(BIRKOMIUS_TRIGGERED) == 1) {
-            $this->acquireCulture($turnOwnerId, 1);
-        }
-        if ($this->getGameStateValue(BISSCHOP_TRIGGERED) == 1) {
-            $this->acquireEnergy($turnOwnerId, 1);
-        }
         $cultureCost = -1;
         if ($this->getGameStateValue(NIBIRU_TRIGGERED) == 1) {
             $cultureCost = -2;
         }
 
         $playerId = (int)$this->getActivePlayerId();
-
         $playerObj = $this->getPlayerObject($playerId);
         $cultureLevel = $playerObj['culture_level'];
 
@@ -508,6 +506,14 @@ trait ActionTrait {
             "player_name" => $this->getActivePlayerName(),
             "culture_level" => $cultureLevel + $cultureCost,
         ]);
+
+        $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
+        if ($this->getGameStateValue(BIRKOMIUS_TRIGGERED) == 1) {
+            $this->acquireCulture($turnOwnerId, 1);
+        }
+        if ($this->getGameStateValue(BISSCHOP_TRIGGERED) == 1) {
+            $this->acquireEnergy($turnOwnerId, 1);
+        }
 
         $face = $this->getGameStateValue(DIE_FACE_ACTIVATED);
         switch ($face) {
