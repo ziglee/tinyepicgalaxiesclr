@@ -235,9 +235,8 @@ class Game extends \Table
      */
     public function getGameProgression()
     {
-        // TODO: compute and return the game progression
-
-        return 0;
+        $highestScore = $this->getPlayersMaxScore();
+        return (100 * $highestScore) / 21;
     }
 
     /**
