@@ -319,7 +319,11 @@ function (dojo, declare) {
                         this.addActionButton(`actPass-btn`, _('Pass'), () => this.onPassClick(), null, false, 'red');
                         break;
                     case 'decideFollow':
-                        this.addActionButton(`actDecideFollowTrue-btn`, _('Folow'), () => this.onDecideFollowClick(true));
+                        if (args.nibiruTriggered) {
+                            this.addActionButton(`actDecideFollowTrue-btn`, _('Folow (spend 2 culture)'), () => this.onDecideFollowClick(true));
+                        } else {
+                            this.addActionButton(`actDecideFollowTrue-btn`, _('Folow (spend 1 culture)'), () => this.onDecideFollowClick(true));
+                        }
                         this.addActionButton(`actDecideFollowFalse-btn`, _('Pass'), () => this.onDecideFollowClick(false), null, false, 'red');
                         break;
                     case 'chooseEmpireAction':

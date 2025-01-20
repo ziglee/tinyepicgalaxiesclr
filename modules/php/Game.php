@@ -51,6 +51,10 @@ class Game extends \Table
             DIE_FACE_ACTIVATED => 13,
             PLAYER_ID_ACTIVATING_DIE => 14,
             FOLLOWERS_COUNT => 15,
+            TURN_OWNER_ID => 16,
+            BIRKOMIUS_TRIGGERED => 17,
+            BISSCHOP_TRIGGERED => 18,
+            NIBIRU_TRIGGERED => 19,
         ]);
 
         $this->missionCards = $this->getNew("module.common.deck");
@@ -112,6 +116,10 @@ class Game extends \Table
         $this->setGameStateInitialValue(DIE_FACE_ACTIVATED, 0);
         $this->setGameStateInitialValue(PLAYER_ID_ACTIVATING_DIE, 0);
         $this->setGameStateInitialValue(FOLLOWERS_COUNT, 0);
+        $this->setGameStateInitialValue(TURN_OWNER_ID, 0);
+        $this->setGameStateInitialValue(BIRKOMIUS_TRIGGERED, 0);
+        $this->setGameStateInitialValue(BISSCHOP_TRIGGERED, 0);
+        $this->setGameStateInitialValue(NIBIRU_TRIGGERED, 0);
 
         $playerCount = count($players);
 

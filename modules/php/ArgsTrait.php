@@ -78,4 +78,10 @@ trait ArgsTrait {
             "canUtilizeColony" => $canUtilizeColony,
         ];
     }
+
+    public function argDecideFollow() {
+        return [
+            "nibiruTriggered" => $this->getGameStateValue(NIBIRU_TRIGGERED) == 1,
+        ];
+    }
 }

@@ -28,7 +28,7 @@ trait StateTrait {
         $player_id = (int)$this->getActivePlayerId();
         
         $lastTurn = intval(self::getGameStateValue(LAST_TURN));
-        
+
         // check if it was last action from player who started last turn
         if ($lastTurn == $player_id) {
             $this->gamestate->nextState('endScore');
@@ -43,6 +43,10 @@ trait StateTrait {
                 }
             }
             
+            $this->setGameStateValue(TURN_OWNER_ID, $player_id);
+            $this->setGameStateValue(BIRKOMIUS_TRIGGERED, 0);
+            $this->setGameStateValue(BISSCHOP_TRIGGERED, 0);
+            $this->setGameStateValue(NIBIRU_TRIGGERED, 0);
             $this->setGameStateValue(FREE_REROLL_USED, 0);
             $this->resetDice();
     
@@ -90,7 +94,9 @@ trait StateTrait {
         $this->setGameStateValue(FOLLOWERS_COUNT, $followersCount + 1);
         $playerObj = $this->getPlayerObject($playerId);
         $cultureLevel = $playerObj['culture_level'];
-        if ($cultureLevel > 0) {
+        $nibiruTriggered = $this->getGameStateValue(NIBIRU_TRIGGERED) == 1;
+
+        if ((!$nibiruTriggered && $cultureLevel >= 1) || ($nibiruTriggered && $cultureLevel >= 2)) {
             $this->gamestate->nextState("decideFollow");
         } else {
             $this->gamestate->nextState("autoSkip");

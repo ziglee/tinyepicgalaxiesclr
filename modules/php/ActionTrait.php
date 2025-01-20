@@ -96,18 +96,20 @@ trait ActionTrait {
 
     private function acquireEnergy(int $playerId, int $delta) {
         $newEnergyLevel = $this->incrementPlayerEnergy($playerId, $delta);
+        $playerObj = $this->getPlayerObject($playerId);
         $this->notifyAllPlayers("energyLevelUpdated", clienttranslate('${player_name} acquired energy'), [
             "player_id" => $playerId,
-            "player_name" => $this->getActivePlayerName(),
+            "player_name" => $playerObj['player_name'],
             "energy_level" => $newEnergyLevel,
         ]);
     }
 
     private function acquireCulture(int $playerId, int $delta) {
         $newCultureLevel = $this->incrementPlayerCulture($playerId, $delta);
+        $playerObj = $this->getPlayerObject($playerId);
         $this->notifyAllPlayers("cultureLevelUpdated", clienttranslate('${player_name} acquired culture'), [
             "player_id" => $playerId,
-            "player_name" => $this->getActivePlayerName(),
+            "player_name" => $playerObj['player_name'],
             "culture_level" => $newCultureLevel,
         ]);
     }
@@ -392,28 +394,85 @@ trait ActionTrait {
     private function executePlanetAction(int $playerId, int $planetId) {
         $planetCard = $this->planetCards->getCard($planetId);
         $planet = new \PlanetCard($planetCard);
-        
+        $playerObj = $this->getPlayerObject($playerId);
+
         switch ($planet->type_arg) {
-            case PLANET_ANDELLOUXIAN6:
-                // TODO
-            $this->gamestate->nextState("nextFollower");
-                break;
             case PLANET_AUGHMOORE:
                 $shipsInGalaxyCount = $this->getPlayerShipsInGalaxyCount($playerId);
                 $this->acquireCulture($playerId, $shipsInGalaxyCount);
                 $this->gamestate->nextState("nextFollower");
                 break;
             case PLANET_BIRKOMIUS:
-                // TODO
+                $this->setGameStateValue(BIRKOMIUS_TRIGGERED, 1);
                 $this->gamestate->nextState("nextFollower");
                 break;
             case PLANET_BISSCHOP:
-                // TODO
+                $this->setGameStateValue(BISSCHOP_TRIGGERED, 1);
                 $this->gamestate->nextState("nextFollower");
                 break;
-            // TODO every other planet
-            default:
-                // TODO remove default case
+            case PLANET_GLEAMZANIER:
+                $playersIds = $this->getPlayersIds();
+                foreach ($playersIds as $loopPlayerId) {
+                    if ($loopPlayerId == $playerId) {
+                       $this->acquireEnergy($loopPlayerId, 2);
+                    } else {
+                        $this->acquireEnergy($loopPlayerId, 1);
+                    }
+                }
+                $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_HOEFKER:
+                $energyLevel = $playerObj['energy_level'];
+                if ($energyLevel > 0) {
+                    $cultureLevel = $playerObj['culture_level'];
+
+                    $this->incrementPlayerEnergy($playerId, -1);
+                    $this->incrementPlayerCulture($playerId, 2);
+
+                    $this->notifyAllPlayers("energyLevelUpdated", '', [
+                        "player_id" => $playerId,
+                        "player_name" => $playerObj['player_name'],
+                        "energy_level" => $energyLevel - 1,
+                    ]);
+                    $this->notifyAllPlayers("cultureLevelUpdated", '', [
+                        "player_id" => $playerId,
+                        "player_name" => $playerObj['player_name'],
+                        "culture_level" => $cultureLevel + 2,
+                    ]);
+                }
+                $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_JAC110912:
+                $playersIds = $this->getPlayersIds();
+                foreach ($playersIds as $loopPlayerId) {
+                    if ($loopPlayerId == $playerId) {
+                       $this->acquireCulture($loopPlayerId, 2);
+                    } else {
+                        $this->acquireCulture($loopPlayerId, 1);
+                    }
+                }
+                $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_JAKKS:
+                $this->acquireCulture($playerId, 1);
+                $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_MJ120210:
+                $this->acquireEnergy($playerId, 2);
+                $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_NIBIRU:
+                $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
+                if ($turnOwnerId == $playerId) {
+                    $this->setGameStateValue(NIBIRU_TRIGGERED, 1);
+                }
+                $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_VICIKS156:
+                $this->acquireEnergy($playerId, 1);
+                $this->gamestate->nextState("nextFollower");
+                break;
+            default: // TODO every other planet and remove default case
                 $this->gamestate->nextState("nextFollower");
                 break;
         }
@@ -426,16 +485,28 @@ trait ActionTrait {
             return;
         }
 
+        $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
+        if ($this->getGameStateValue(BIRKOMIUS_TRIGGERED) == 1) {
+            $this->acquireCulture($turnOwnerId, 1);
+        }
+        if ($this->getGameStateValue(BISSCHOP_TRIGGERED) == 1) {
+            $this->acquireEnergy($turnOwnerId, 1);
+        }
+        $cultureCost = -1;
+        if ($this->getGameStateValue(NIBIRU_TRIGGERED) == 1) {
+            $cultureCost = -2;
+        }
+
         $playerId = (int)$this->getActivePlayerId();
 
         $playerObj = $this->getPlayerObject($playerId);
         $cultureLevel = $playerObj['culture_level'];
 
-        $this->incrementPlayerCulture($playerId, -1);
+        $this->incrementPlayerCulture($playerId, $cultureCost);
         $this->notifyAllPlayers("cultureLevelUpdated", clienttranslate('${player_name} decided to follow last action'), [
             "player_id" => $playerId,
             "player_name" => $this->getActivePlayerName(),
-            "culture_level" => $cultureLevel - 1,
+            "culture_level" => $cultureLevel + $cultureCost,
         ]);
 
         $face = $this->getGameStateValue(DIE_FACE_ACTIVATED);

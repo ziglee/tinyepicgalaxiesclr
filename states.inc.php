@@ -195,8 +195,9 @@ $playerActionsGameStates = [
     ST_PLAYER_DECIDE_FOLLOW => [
         "name" => "decideFollow",
         "description" => clienttranslate('${actplayer} must decide about following the last action'), 
-        "descriptionmyturn" => clienttranslate('${you} must decide about following the last action spending 1 culture'),
+        "descriptionmyturn" => clienttranslate('${you} must decide about following the last action'),
         "type" => "activeplayer",
+        "args" => "argDecideFollow",
         "possibleactions" => [
             "actDecideFollow", 
         ],
