@@ -136,11 +136,7 @@ function (dojo, declare) {
                     <div class="whiteblock" id="player-table-${player.id}">
                         <strong style="color:#${player.color};">${player.name}</strong>
                         <div class="galaxy-mat" id="galaxy-mat-${player.id}">
-                            <div class="ships-hangar" id="ships-hangar-${player.id}">
-                                Hangar
-                            </div>
                             <div class="empire-track" id="empire-track-${player.id}">
-                                Empire
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-1">0</div>
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-2">2</div>
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-3">3</div>
@@ -149,7 +145,6 @@ function (dojo, declare) {
                                 <div class="empire-track-slot" id="empire-track-${player.id}-slot-6">6</div>
                             </div>
                             <div class="energy-culture-track" id="energy-culture-track-${player.id}">
-                                Energy/Culture
                                 <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-0">0</div>
                                 <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-1">1</div>
                                 <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-2">2</div>
@@ -158,6 +153,9 @@ function (dojo, declare) {
                                 <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-5">5</div>
                                 <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-6">6</div>
                                 <div class="energy-culture-track-slot" id="energy-culture-track-${player.id}-slot-7">7</div>
+                            </div>
+                            <div class="ships-hangar" id="ships-hangar-${player.id}">
+                                Hangar
                             </div>
                         </div>
                         <div class="colonized-planets-row" id="colonized-planets-row-${player.id}">
@@ -183,7 +181,7 @@ function (dojo, declare) {
                         'beforeend', 
                         `<div class="colonized-planet" id="planet-${planet.id}">
                             ${planet.info.name} (${planet.info.pointsWorth} points)
-                            <p>${planet.info.text}</p>
+                            <p class="planet-text">${planet.info.text}</p>
                         </div>` 
                     );
                 });

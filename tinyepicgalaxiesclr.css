@@ -271,13 +271,17 @@
 .energy-culture-track-slot {
     position: relative;
     width: 40px;
-    height: 40px;
+    height: 60px;
     border-style: solid;
     border-width: 1px;
 }
 
 .energy-token {
-    position: absolute;
+    position: relative;
+}
+
+.empire-token {
+    position: relative;
 }
 
 .ship-selected {
