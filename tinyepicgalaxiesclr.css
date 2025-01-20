@@ -199,6 +199,11 @@
     background-color: gainsboro;
 }
 
+.planet-text {
+    width: 150px;
+    font-size: small;
+}
+
 .galaxy-mat {
     border-style: solid;
     border-width: 2px;

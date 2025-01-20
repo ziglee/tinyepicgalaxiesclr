@@ -182,7 +182,8 @@ function (dojo, declare) {
                     document.getElementById(`colonized-planets-row-${player.id}`).insertAdjacentHTML(
                         'beforeend', 
                         `<div class="colonized-planet" id="planet-${planet.id}">
-                            ${planet.info.name} (Points ${planet.info.pointsWorth})
+                            ${planet.info.name} (${planet.info.pointsWorth} points)
+                            <p>${planet.info.text}</p>
                         </div>` 
                     );
                 });
@@ -357,11 +358,12 @@ function (dojo, declare) {
        addPlanetToCenterRow: function(planet) {
             dojo.place(`
                 <div class="planet-card" id="planet-${planet.id}">
-                    <div>${planet.info.name} ${planet.type} (Points ${planet.info.pointsWorth})</div>
+                    <div>${planet.info.name} ${planet.type} (${planet.info.pointsWorth} points)</div>
                     <div class="planet-track" id="planet-track-${planet.id}"></div>
                     <div class="planet-surface" id="planet-surface-${planet.id}">
                         Surface
                     </div>
+                    <p class="planet-text">${planet.info.text}</p>
                 </div>
                 `, 
                 'planet-cards-row'

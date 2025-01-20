@@ -33,7 +33,7 @@ trait UtilTrait {
     }
 
     function getPlayerObject(int $playerId) {
-        return $this->getObjectFromDB("SELECT `player_id` `id`, `player_score` `score`, `empire_level`, `energy_level`, `culture_level`, `dice_count` FROM `player` WHERE `player_id` = $playerId");
+        return $this->getObjectFromDB("SELECT `player_id` `id`, `player_score` `score`, `empire_level`, `energy_level`, `culture_level`, `dice_count`, `player_name` FROM `player` WHERE `player_id` = $playerId");
     }
 
     function getPlayerScore(int $playerId) {
