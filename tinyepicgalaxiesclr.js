@@ -93,9 +93,22 @@ function (dojo, declare) {
                     <div id="deck">DECK</div>
                     <div id="planet-cards-row"></div>
                 </div>
+                <div id="andellouxian-selector" class="whiteblock" style="display: none;">
+                    <div class="die-face" data-face="2"></div>
+                    <div>
+                        <input type="number" id="andellouxian-selector-energy" min="0" max="7" value="0">
+                    </div>
+                    <div class="die-face" data-face="4"></div>
+                    <div>
+                        <input type="number" id="andellouxian-selector-culture" min="0" max="7" value="0">
+                    </div>
+                    <a href="#" id="andellouxian-confirm-btn" class="bgabutton bgabutton_blue"><span>confirm</span></a>
+                </div>
                 <div id="player-tables"></div>
                 <div id="activation-bay"></div>
             `);
+
+            document.getElementById('andellouxian-confirm-btn').addEventListener('click', e => this.onAndellouxianConfirmClick(e));
             
             // Set up your game interface here, according to "gamedatas"
             updateDice(gamedatas.dice);
@@ -180,7 +193,7 @@ function (dojo, declare) {
                     document.getElementById(`colonized-planets-row-${player.id}`).insertAdjacentHTML(
                         'beforeend', 
                         `<div class="colonized-planet" id="planet-${planet.id}">
-                            ${planet.info.name} (${planet.info.pointsWorth} points)
+                            <b>${planet.info.name}</b> (${planet.info.pointsWorth} points)
                             <p class="planet-text">${planet.info.text}</p>
                         </div>` 
                     );
@@ -237,45 +250,47 @@ function (dojo, declare) {
         {
             console.log( 'Entering state: '+stateName, args );
             
-            switch( stateName )
-            {
-            case 'chooseAction':
-                if (this.isCurrentPlayerActive()) {
-                    this.canFreeReroll = args.args.canFreeReroll;
-                    this.canReroll = args.args.canReroll;
-                    this.canConvert = args.args.canConvert;
-                }
-                break;
-            case 'convertDie':
-                ;
-                dojo.style( 'dice-tray', 'display', 'none' );
-                dojo.style( 'dice-face-selection', 'display', 'block' );
+            switch( stateName ) {
+                case 'chooseAction':
+                    if (this.isCurrentPlayerActive()) {
+                        this.canFreeReroll = args.args.canFreeReroll;
+                        this.canReroll = args.args.canReroll;
+                        this.canConvert = args.args.canConvert;
+                    }
+                    break;
+                case 'convertDie':
+                    ;
+                    dojo.style( 'dice-tray', 'display', 'none' );
+                    dojo.style( 'dice-face-selection', 'display', 'block' );
 
-                dojo.empty('dice-face-selection-tray');
-                args.args.converterDice.forEach(die => {
-                    document.getElementById('dice-face-selection-tray').insertAdjacentHTML('beforeend', `
-                        <div class="die-convert-slot die-face" id="die-convert-slot-${die.id}" data-face="${die.face}" data-used="0"></div>
-                    `);
-                });
-                document.querySelectorAll('.die-convert-slot').forEach(die => {
-                    die.addEventListener('click', e => this.onDieToConvertClick(e));
-                });
-                break;
-            case 'moveShip':
-                if (this.isCurrentPlayerActive()) {
-                    this.selectableShips = args.args.selectableShips;
-                }
-                break;
-            case 'advanceEconomy':
-                if (this.isCurrentPlayerActive()) {
-                    this.selectableShips = args.args.selectableShips;
-                }
-                break;
-            case 'advanceDiplomacy':
-                if (this.isCurrentPlayerActive()) {
-                    this.selectableShips = args.args.selectableShips;
-                }
-                break;
+                    dojo.empty('dice-face-selection-tray');
+                    args.args.converterDice.forEach(die => {
+                        document.getElementById('dice-face-selection-tray').insertAdjacentHTML('beforeend', `
+                            <div class="die-convert-slot die-face" id="die-convert-slot-${die.id}" data-face="${die.face}" data-used="0"></div>
+                        `);
+                    });
+                    document.querySelectorAll('.die-convert-slot').forEach(die => {
+                        die.addEventListener('click', e => this.onDieToConvertClick(e));
+                    });
+                    break;
+                case 'moveShip':
+                    if (this.isCurrentPlayerActive()) {
+                        this.selectableShips = args.args.selectableShips;
+                    }
+                    break;
+                case 'advanceEconomy':
+                    if (this.isCurrentPlayerActive()) {
+                        this.selectableShips = args.args.selectableShips;
+                    }
+                    break;
+                case 'advanceDiplomacy':
+                    if (this.isCurrentPlayerActive()) {
+                        this.selectableShips = args.args.selectableShips;
+                    }
+                    break;
+                case 'planetAndellouxian':
+                    dojo.style( 'andellouxian-selector', 'display', 'flex' );
+                    break;
             }
         },
 
@@ -287,13 +302,13 @@ function (dojo, declare) {
             console.log( 'Leaving state: '+stateName );
             dojo.query('.die-active').removeClass('die-active');
             dojo.query('.ship-selected').removeClass('ship-selected');
+            dojo.style( 'andellouxian-selector', 'display', 'none' );
             
-            switch( stateName )
-            {
-            case 'convertDie':
-                dojo.style( 'dice-tray', 'display', 'flex' );
-                dojo.style( 'dice-face-selection', 'display', 'none' );
-                break;
+            switch( stateName ) {
+                case 'convertDie':
+                    dojo.style( 'dice-tray', 'display', 'flex' );
+                    dojo.style( 'dice-face-selection', 'display', 'none' );
+                    break;
             }               
         }, 
 
@@ -356,7 +371,7 @@ function (dojo, declare) {
        addPlanetToCenterRow: function(planet) {
             dojo.place(`
                 <div class="planet-card" id="planet-${planet.id}">
-                    <div>${planet.info.name} ${planet.type} (${planet.info.pointsWorth} points)</div>
+                    <div><b>${planet.info.name}</b> ${planet.type} (${planet.info.pointsWorth} points)</div> <div
                     <div class="planet-track" id="planet-track-${planet.id}"></div>
                     <div class="planet-surface" id="planet-surface-${planet.id}">
                         Surface
@@ -439,6 +454,14 @@ function (dojo, declare) {
                 return node.id.split('-')[2]; 
             });
             dojo.empty('dice-buttons');
+
+            let rerollBtnText = "Reroll";
+            let rerollBtnClass = "bgabutton_blue";
+            if (this.canFreeReroll) {
+                rerollBtnText = "Free reroll";
+                rerollBtnClass = "bgabutton_green";
+            }
+            
             if (ids.length == 1) {
                 document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
                     <a href="#" id="activate-die-btn" class="bgabutton bgabutton_blue"><span>Activate die</span></a>
@@ -447,7 +470,7 @@ function (dojo, declare) {
 
                 if (this.canFreeReroll || this.canReroll) {
                     document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                        <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll die</span></a>
+                        <a href="#" id="reroll-dice-btn" class="bgabutton ${rerollBtnClass}"><span>${rerollBtnText} die</span></a>
                     `);
                     document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
                 }
@@ -460,14 +483,14 @@ function (dojo, declare) {
                 }
                 if (this.canFreeReroll || this.canReroll) {
                     document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                        <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
+                        <a href="#" id="reroll-dice-btn" class="bgabutton ${rerollBtnClass}"><span>${rerollBtnText} dice</span></a>
                     `);
                     document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
                 }
             } else if (ids.length > 2) {
                 if (this.canFreeReroll || this.canReroll) {
                     document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                        <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_blue"><span>Reroll dice</span></a>
+                        <a href="#" id="reroll-dice-btn" class="bgabutton ${rerollBtnClass}"><span>${rerollBtnText} dice</span></a>
                     `);
                     document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
                 }
@@ -550,7 +573,6 @@ function (dojo, declare) {
 
             const shipId = evt.currentTarget.id.split('-')[1];
 
-
             switch( this.gamedatas.gamestate.name )
             {
                 case 'moveShip':
@@ -578,6 +600,13 @@ function (dojo, declare) {
                             // (most of the time, nothing, as the game will react to notifs / change of state instead)
                         });
                     }
+                    break;
+                case 'planetAndellouxian':
+                    if (this.selectableShips[shipId]) {
+                        dojo.query('.ship-selected').removeClass('ship-selected');
+                        dojo.toggleClass(evt.currentTarget.id, 'ship-selected');
+                    }
+                    // TODO update energy/culture selectors base on ship track progress
                     break;
             }
         },
@@ -669,6 +698,30 @@ function (dojo, declare) {
         onDecideFollowClick: function(follow) {
             this.bgaPerformAction("actDecideFollow", {
                 follow: follow,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
+        onAndellouxianConfirmClick: function( evt )
+        {
+            evt.preventDefault();
+            evt.stopPropagation();
+            
+            if (!this.isCurrentPlayerActive()) return;
+
+            const shipDom = (dojo.query('.ship-selected')[0]);
+            if (!shipDom) return;
+
+            const shipId = shipDom.id.split('-')[1];
+            const energy = dojo.attr('andellouxian-selector-energy', 'value');
+            const culture = dojo.attr('andellouxian-selector-culture', 'value');
+
+            this.bgaPerformAction("actPlanetAdellouxian", {
+                shipId: shipId,
+                energy: energy,
+                culture: culture,
             }).then(() =>  {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)

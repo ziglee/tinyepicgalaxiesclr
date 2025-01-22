@@ -397,6 +397,21 @@ trait ActionTrait {
         $playerObj = $this->getPlayerObject($playerId);
 
         switch ($planet->type_arg) {
+            case PLANET_ANDELLOUXIAN6:
+                $ships = $this->getPlayerShips($playerId);
+                $hasShipInOrbit = false;
+                foreach ($ships as $shipId => $ship) {
+                    if (!is_null($ship['track_progress'])) {
+                        $hasShipInOrbit = true;
+                        break;
+                    }
+                }
+                if ($hasShipInOrbit) {
+                    $this->gamestate->nextState("planetAndellouxian");
+                } else {
+                    $this->gamestate->nextState("nextFollower");
+                }
+                break;
             case PLANET_AUGHMOORE:
                 $shipsInGalaxyCount = $this->getPlayerShipsInGalaxyCount($playerId);
                 $this->acquireCulture($playerId, $shipsInGalaxyCount);
@@ -416,6 +431,9 @@ trait ActionTrait {
                 }
                 $this->gamestate->nextState("nextFollower");
                 break;
+            case PLANET_DREWKAIDEN:
+                $this->gamestate->nextState("advanceDiplomacy");
+                break;
             case PLANET_GLEAMZANIER:
                 $playersIds = $this->getPlayersIds();
                 foreach ($playersIds as $loopPlayerId) {
@@ -430,20 +448,13 @@ trait ActionTrait {
             case PLANET_HOEFKER:
                 $energyLevel = $playerObj['energy_level'];
                 if ($energyLevel > 0) {
-                    $cultureLevel = $playerObj['culture_level'];
-
                     $this->incrementPlayerEnergy($playerId, -1);
-                    $this->incrementPlayerCulture($playerId, 2);
+                    $this->acquireCulture($playerId, 2);
 
                     $this->notifyAllPlayers("energyLevelUpdated", '', [
                         "player_id" => $playerId,
                         "player_name" => $playerObj['player_name'],
                         "energy_level" => $energyLevel - 1,
-                    ]);
-                    $this->notifyAllPlayers("cultureLevelUpdated", '', [
-                        "player_id" => $playerId,
-                        "player_name" => $playerObj['player_name'],
-                        "culture_level" => $cultureLevel + 2,
                     ]);
                 }
                 $this->gamestate->nextState("nextFollower");
@@ -462,6 +473,9 @@ trait ActionTrait {
             case PLANET_JAKKS:
                 $this->acquireCulture($playerId, 1);
                 $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_LEANDRA:
+                $this->gamestate->nextState("advanceEconomy");
                 break;
             case PLANET_MJ120210:
                 $this->acquireEnergy($playerId, 2);
@@ -594,5 +608,37 @@ trait ActionTrait {
             $this->upgradeEmpire($type);
             $this->gamestate->nextState("nextFollower");
         }
+    }
+
+    public function actPlanetAdellouxian(int $shipId, int $energy, int $culture): void {
+        $playerId = (int)$this->getActivePlayerId();
+
+        $ship = $this->getShipById($shipId);
+        if ($ship['player_id'] != $playerId) {
+            throw new \BgaUserException('You cannot move ships of other players');
+        }
+        $trackProgress = $ship['track_progress'];
+        if (is_null($trackProgress)) { 
+            throw new \BgaUserException('You must select a ship in orbit');
+        }
+        if ($trackProgress < ($energy + $culture)) {
+            throw new \BgaUserException('The amount of energy plus culture must be equal to the ship orbit number');
+        }
+
+        if ($energy > 0) {
+            $this->acquireEnergy($playerId, $energy);
+        }
+        if ($culture > 0) {
+            $this->acquireCulture($playerId, $culture);
+        }
+        
+        $this->updateShipLocation($shipId, null, null);
+        $this->notifyAllPlayers("shipUpdated", "", [
+            "player_id" => $playerId,
+            "player_name" => $this->getActivePlayerName(),
+            "ship" => $this->getShipById($shipId),
+        ]);
+
+        $this->gamestate->nextState("");
     }
 }

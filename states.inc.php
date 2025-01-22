@@ -146,6 +146,9 @@ $playerActionsGameStates = [
             "actMoveShip", 
         ],
         "transitions" => [
+            "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
+            "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
+            "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
             "nextFollower" => ST_NEXT_FOLLOWER,
         ]
     ],
@@ -188,6 +191,9 @@ $playerActionsGameStates = [
             "actDecideEmpireAction", 
         ],
         "transitions" => [
+            "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
+            "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
+            "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
             "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
@@ -206,6 +212,21 @@ $playerActionsGameStates = [
             "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
             "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
             "nextFollower" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+];
+
+$playerPlanetActionsGameStates = [
+    ST_PLAYER_PLANET_ANDELLOUXIAN => [
+        "name" => "planetAndellouxian",
+        "description" => clienttranslate('${actplayer} must move 1 of his ships to his galaxy'), 
+        "descriptionmyturn" => clienttranslate('${you} chose 1 of your ships to move to your galaxy'),
+        "type" => "activeplayer",
+        "possibleactions" => [
+            "actPlanetAdellouxian", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
         ]
     ],
 ];
@@ -268,4 +289,4 @@ $gameGameStates = [
     ],
 ];
 
-$machinestates = $basicGameStates + $playerActionsGameStates + $gameGameStates;
+$machinestates = $basicGameStates + $playerActionsGameStates + $playerPlanetActionsGameStates + $gameGameStates;
