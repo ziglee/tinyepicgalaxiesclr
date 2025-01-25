@@ -177,6 +177,14 @@ trait ActionTrait {
 
     public function actConvertDie(int $dieId, int $newFace): void
     {
+        $die = $this->getDieById($dieId);
+        if ($die['used'] || $die['converter']) {
+            throw new \BgaUserException('You cannot convert a used die');
+        }
+        if ($die['face'] == $newFace) {
+            throw new \BgaUserException('You must select a different face');
+        }
+
         $this->updateDieFace($dieId, $newFace);
 
         $this->notifyAllPlayers(
@@ -291,13 +299,15 @@ trait ActionTrait {
             }
 
             $this->planetCards->moveCard($planetId, "colony", $player_id);
-            $draftedPlanets = $this->planetCards->pickCardsForLocation(1, 'deck', 'centerrow');
             $this->notifyAllPlayers("planetColonized", clienttranslate('${player_name} colonized planet ${planet_name}'), [
                 "player_id" => $player_id,
                 "player_name" => $this->getActivePlayerName(),
                 "planet_name" => $planet->info->name,
                 "planet_id" => $planetId,
-                "drafted_planet" => new \PlanetCard($draftedPlanets[0]),
+            ]);
+            $draftedPlanets = $this->planetCards->pickCardsForLocation(1, 'deck', 'centerrow');
+            $this->notifyAllPlayers("draftedPlanet", "", [
+                "planet" => new \PlanetCard($draftedPlanets[0]),
             ]);
 
             $newScore = $this->incrementPlayerScore($player_id, $planet->info->pointsWorth);
@@ -444,6 +454,16 @@ trait ActionTrait {
                     }
                 }
                 $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_GYORE:
+                if ($this->isAllRolledDiceUsed()) {
+                    $this->gamestate->nextState("nextFollower");
+                } else {
+                    $this->gamestate->nextState("planetGyore");
+                }
+                break;
+            case PLANET_HELIOS:
+                $this->gamestate->nextState("planetHelios");
                 break;
             case PLANET_HOEFKER:
                 $energyLevel = $playerObj['energy_level'];
@@ -639,6 +659,25 @@ trait ActionTrait {
             "ship" => $this->getShipById($shipId),
         ]);
 
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetHelios(int $planetId) {
+        $occupiedPlanetsIds = $this->getObjectListFromDB("SELECT DISTINCT(planet_id) FROM ships WHERE planet_id IS NOT NULL", true);
+        foreach ($occupiedPlanetsIds as $occupiedPlanetId) {
+            if ($occupiedPlanetId == $planetId) {
+                throw new \BgaUserException('You cannot select a planet that is occupied');
+            }
+        }
+
+        $this->planetCards->insertCardOnExtremePosition($planetId, "deck", false);
+        $draftedPlanets = $this->planetCards->pickCardsForLocation(1, 'deck', 'centerrow');
+        $this->notifyAllPlayers("draftedPlanet", "", [
+            "planet" => new \PlanetCard($draftedPlanets[0]),
+        ]);
+        $this->notifyAllPlayers("movePlanetToBottomOfDeck", "", [
+            "planetId" => $planetId,
+        ]);
         $this->gamestate->nextState("");
     }
 }

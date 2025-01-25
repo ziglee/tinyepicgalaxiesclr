@@ -84,4 +84,12 @@ trait ArgsTrait {
             "nibiruTriggered" => $this->getGameStateValue(NIBIRU_TRIGGERED) == 1,
         ];
     }
+
+    public function argPlanetHelios() {
+        $occupiedPlanetsIds = $this->getObjectListFromDB("SELECT DISTINCT(planet_id) FROM ships WHERE planet_id IS NOT NULL", true);
+        $planetsIds = array_keys($this->planetCards->getCardsInLocation('centerrow'));
+        return [
+            "elegiblePlanetsIds" => array_values(array_diff($planetsIds, $occupiedPlanetsIds))
+        ];
+    }
 }

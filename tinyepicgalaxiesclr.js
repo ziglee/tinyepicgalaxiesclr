@@ -78,7 +78,7 @@ function (dojo, declare) {
                 </div>
                 <div class="whiteblock" id="dice-face-selection" style="display: none;">
                     <strong>Choose die to convert</strong>
-                    <div id="dice-face-selection-tray" style="display: flex;"></div>
+                    <div id="dice-convertion-selection-tray" style="display: flex;"></div>
                     <strong>Choose new face</strong>
                     <div id="dice-face-selection-options">
                         <div class="die-newface die-face" data-face="1"></div>
@@ -110,7 +110,6 @@ function (dojo, declare) {
 
             document.getElementById('andellouxian-confirm-btn').addEventListener('click', e => this.onAndellouxianConfirmClick(e));
             
-            // Set up your game interface here, according to "gamedatas"
             updateDice(gamedatas.dice);
             document.querySelectorAll('.die-slot').forEach(die => {
                 die.addEventListener('click', e => this.onDieClick(e));
@@ -189,6 +188,8 @@ function (dojo, declare) {
                     'beforeend', 
                     `<div class="empire-token" data-color="${player.color}" id="empire-token-${player.id}">EM</div>`
                 );
+
+                // Colonized planets in player's area
                 gamedatas.colonizedplanets[player.id].forEach(planet => {
                     document.getElementById(`colonized-planets-row-${player.id}`).insertAdjacentHTML(
                         'beforeend', 
@@ -199,12 +200,6 @@ function (dojo, declare) {
                     );
                 });
             });
-
-            // Colonized planets in player's area
-            for (let i in gamedatas.colonizedplanets) {
-                const planet = gamedatas.colonizedplanets[i];
-                // TODO
-            }
 
             Object.values(gamedatas.ships).forEach(ship => {
                 const color = this.gamedatas.players[ship.player_id].color;
@@ -259,13 +254,13 @@ function (dojo, declare) {
                     }
                     break;
                 case 'convertDie':
-                    ;
+                case 'planetGyore':
                     dojo.style( 'dice-tray', 'display', 'none' );
                     dojo.style( 'dice-face-selection', 'display', 'block' );
 
-                    dojo.empty('dice-face-selection-tray');
+                    dojo.empty('dice-convertion-selection-tray');
                     args.args.converterDice.forEach(die => {
-                        document.getElementById('dice-face-selection-tray').insertAdjacentHTML('beforeend', `
+                        document.getElementById('dice-convertion-selection-tray').insertAdjacentHTML('beforeend', `
                             <div class="die-convert-slot die-face" id="die-convert-slot-${die.id}" data-face="${die.face}" data-used="0"></div>
                         `);
                     });
@@ -291,6 +286,9 @@ function (dojo, declare) {
                 case 'planetAndellouxian':
                     dojo.style( 'andellouxian-selector', 'display', 'flex' );
                     break;
+                case 'planetHelios':
+                    // TODO
+                    break;
             }
         },
 
@@ -306,6 +304,7 @@ function (dojo, declare) {
             
             switch( stateName ) {
                 case 'convertDie':
+                case 'planetGyore':
                     dojo.style( 'dice-tray', 'display', 'flex' );
                     dojo.style( 'dice-face-selection', 'display', 'none' );
                     break;
@@ -622,6 +621,17 @@ function (dojo, declare) {
 
             const planetId = evt.currentTarget.id.split('-')[1];
             
+            switch( this.gamedatas.gamestate.name )
+            {
+                case 'planetHelios':
+                    this.bgaPerformAction("actPlanetHelios", {
+                        planetId: planetId,
+                    }).then(() =>  {
+                        // What to do after the server call if it succeeded
+                        // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                    });
+                    break;
+            }
         },
 
         onPlanetSurfaceClick: function( evt )
@@ -855,8 +865,14 @@ function (dojo, declare) {
             console.log('notif_planetColonized', notif);
 
             dojo.destroy(`planet-${notif.planet_id}`);
-            const draftedPlanet = notif.drafted_planet;
-            this.addPlanetToCenterRow(draftedPlanet);
+            // TODO move planet to player galaxy
+        },
+
+        notif_draftedPlanet: async function( notif )
+        {
+            console.log('notif_draftedPlanet', notif);
+
+            this.addPlanetToCenterRow(notif.planet);
         },
 
         notif_lastTurn: async function( animate )
@@ -865,6 +881,14 @@ function (dojo, declare) {
             
             if (animate === void 0) { animate = true; }
             dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text ".concat(animate ? 'animate' : '', "\">").concat(_("This is the final round!"), "</span>\n        </div>"), 'page-title');
+        },
+
+        notif_movePlanetToBottomOfDeck: async function( notif )
+        {
+            console.log('notif_movePlanetToBottomOfDeck', notif);
+
+            dojo.destroy(`planet-${notif.planetId}`);
+            // TODO move planet to bottom of deck
         },
    });
 });

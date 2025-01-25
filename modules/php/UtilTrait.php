@@ -116,22 +116,30 @@ trait UtilTrait {
         return $this->getObjectFromDB("SELECT * FROM ships WHERE ship_id = $shipId");
     }
 
+    function getPlanetsFromDb(array $dbObjects) {
+        return array_map(fn($dbObject) => new \PlanetCard($dbObject), array_values($dbObjects));
+    }
+
     function getDice() {
         return $this->getCollectionFromDb(
             "SELECT `die_id` `id`, `face`, `used`, `converter` FROM `dice` ORDER BY `die_id`"
         );
     }
 
+    function isAllRolledDiceUsed(): bool {
+        return $this->getUniqueIntValueFromDB("SELECT IF(COUNT(*) = 0, TRUE, FALSE) AS rolled_unused_count FROM dice AS d WHERE d.used = 0 AND d.face <> 0");
+    }
+
     function getDieFaceById(int $dieId) {
         return $this->getUniqueIntValueFromDB("SELECT `face` FROM `dice` where `die_id` = $dieId");
     }
 
-    function getPlanetsFromDb(array $dbObjects) {
-        return array_map(fn($dbObject) => new \PlanetCard($dbObject), array_values($dbObjects));
+    function getDieById(int $dieId) {
+        return $this->getObjectFromDB("SELECT * FROM `dice` where `die_id` = $dieId");
     }
 
-    function isAllRolledDiceUsed(): bool {
-        return $this->getUniqueIntValueFromDB("SELECT IF(COUNT(*) = 0, TRUE, FALSE) AS rolled_unused_count FROM dice AS d WHERE d.used = 0 AND d.face <> 0");
+    function resetDice() {
+        $this->DbQuery("UPDATE dice SET used = false, converter = false, face = 0");
     }
 
     function useDie(int $dieId) {
@@ -144,10 +152,6 @@ trait UtilTrait {
 
     function updateDieFace(int $dieId, int $newFace) {
         $this->DbQuery("UPDATE dice SET face = $newFace WHERE die_id = $dieId");
-    }
-
-    function resetDice() {
-        $this->DbQuery("UPDATE dice SET used = false, converter = false, face = 0");
     }
 
     function rollDice(int $count) {

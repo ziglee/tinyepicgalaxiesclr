@@ -149,7 +149,28 @@ $playerActionsGameStates = [
             "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
             "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
             "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
+            "planetGyore" => ST_PLAYER_CONVERT_DIE,
+            "planetHelios" => ST_PLAYER_PLANET_HELIOS,
             "nextFollower" => ST_NEXT_FOLLOWER,
+        ]
+    ],
+
+    ST_PLAYER_CHOOSE_EMPIRE_ACTION => [
+        "name" => "chooseEmpireAction",
+        "description" => clienttranslate('${actplayer} must select an empire action'), 
+        "descriptionmyturn" => clienttranslate('${you} must decide between upgrading your empire or using a colonized planet'),
+        "type" => "activeplayer",
+        "args" => "argChooseEmpireAction",
+        "possibleactions" => [
+            "actDecideEmpireAction", 
+        ],
+        "transitions" => [
+            "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
+            "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
+            "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
+            "planetGyore" => ST_PLAYER_CONVERT_DIE,
+            "planetHelios" => ST_PLAYER_PLANET_HELIOS,
+            "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
 
@@ -181,23 +202,6 @@ $playerActionsGameStates = [
         ]
     ],
 
-    ST_PLAYER_CHOOSE_EMPIRE_ACTION => [
-        "name" => "chooseEmpireAction",
-        "description" => clienttranslate('${actplayer} must select an empire action'), 
-        "descriptionmyturn" => clienttranslate('${you} must decide between upgrading your empire or using a colonized planet'),
-        "type" => "activeplayer",
-        "args" => "argChooseEmpireAction",
-        "possibleactions" => [
-            "actDecideEmpireAction", 
-        ],
-        "transitions" => [
-            "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
-            "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
-            "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
-            "nextFollower" => ST_NEXT_FOLLOWER, 
-        ]
-    ],
-
     ST_PLAYER_DECIDE_FOLLOW => [
         "name" => "decideFollow",
         "description" => clienttranslate('${actplayer} must decide about following the last action'), 
@@ -219,11 +223,24 @@ $playerActionsGameStates = [
 $playerPlanetActionsGameStates = [
     ST_PLAYER_PLANET_ANDELLOUXIAN => [
         "name" => "planetAndellouxian",
-        "description" => clienttranslate('${actplayer} must move 1 of his ships to his galaxy'), 
+        "description" => clienttranslate('${actplayer} must move 1 of his/her ships to his/her galaxy'), 
         "descriptionmyturn" => clienttranslate('${you} chose 1 of your ships to move to your galaxy'),
         "type" => "activeplayer",
         "possibleactions" => [
             "actPlanetAdellouxian", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_HELIOS => [
+        "name" => "planetHelios",
+        "description" => clienttranslate('${actplayer} must place an un-occupied planet from the center row into the bottom of the planet deck'), 
+        "descriptionmyturn" => clienttranslate('${you} must place an un-occupied planet from the center row into the bottom of the planet deck'),
+        "type" => "activeplayer",
+        "args" => "argPlanetHelios",
+        "possibleactions" => [
+            "actPlanetHelios", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 
