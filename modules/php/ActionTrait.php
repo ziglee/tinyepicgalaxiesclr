@@ -419,6 +419,7 @@ trait ActionTrait {
                 if ($hasShipInOrbit) {
                     $this->gamestate->nextState("planetAndellouxian");
                 } else {
+                    // TODO should not allow this move
                     $this->gamestate->nextState("nextFollower");
                 }
                 break;
@@ -457,6 +458,7 @@ trait ActionTrait {
                 break;
             case PLANET_GYORE:
                 if ($this->isAllRolledDiceUsed()) {
+                    // TODO should not allow this move
                     $this->gamestate->nextState("nextFollower");
                 } else {
                     $this->gamestate->nextState("planetGyore");
@@ -493,6 +495,15 @@ trait ActionTrait {
             case PLANET_JAKKS:
                 $this->acquireCulture($playerId, 1);
                 $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_JORG:
+                $cultureLevel = $playerObj['culture_level'];
+                if ($cultureLevel < 2) {
+                    // TODO should not allow this move
+                    $this->gamestate->nextState("nextFollower");
+                } else {
+                    $this->gamestate->nextState("planetJorg");
+                }
                 break;
             case PLANET_LEANDRA:
                 $this->gamestate->nextState("advanceEconomy");
@@ -678,6 +689,32 @@ trait ActionTrait {
         $this->notifyAllPlayers("movePlanetToBottomOfDeck", "", [
             "planetId" => $planetId,
         ]);
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetJorg(int $shipId) {
+        $playerId = (int)$this->getActivePlayerId();
+        $playerObj = $this->getPlayerObject($playerId);
+        if ($playerObj['culture_level'] < 2) {
+            throw new \BgaUserException('You do not have enough culture for this move');
+        }
+
+        $ship = $this->getShipById($shipId);
+        if ($ship['player_id'] == $playerId) {
+            throw new \BgaUserException('You cannot selection your own ship');
+        }
+
+        $this->DbQuery("UPDATE ships SET track_progress = LEAST(0, track_progress - 2) WHERE ship_id = $shipId");
+        $this->notifyAllPlayers("shipUpdated", "", [
+            "ship" => $this->getShipById($shipId),
+        ]);
+
+        $culture_level = $this->incrementPlayerCulture($playerId, -2);
+        $this->notifyAllPlayers("cultureLevelUpdated", '', [
+            "player_id" => $playerId,
+            "culture_level" => $culture_level,
+        ]);
+
         $this->gamestate->nextState("");
     }
 }

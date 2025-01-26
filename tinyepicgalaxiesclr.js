@@ -42,7 +42,7 @@ function (dojo, declare) {
             this.canFreeReroll = false;
             this.canReroll = false;
             this.canConvert = false;
-            this.selectableShips = {};
+            this.selectableShips = [];
         },
         
         /*
@@ -176,6 +176,8 @@ function (dojo, declare) {
                     </div>
                 `);
 
+                document.getElementById(`ships-hangar-${player.id}`).addEventListener('click', e => this.onHangarClick(e));
+
                 document.getElementById(`energy-culture-track-${player.id}-slot-${player.energy_level}`).insertAdjacentHTML(
                     'beforeend', 
                     `<div class="energy-token" data-color="${player.color}" id="energy-token-${player.id}">EN</div>`
@@ -286,8 +288,10 @@ function (dojo, declare) {
                 case 'planetAndellouxian':
                     dojo.style( 'andellouxian-selector', 'display', 'flex' );
                     break;
-                case 'planetHelios':
-                    // TODO
+                case 'planetJorg':
+                    if (this.isCurrentPlayerActive()) {
+                        this.selectableShips = args.args.selectableShips;
+                    }
                     break;
             }
         },
@@ -575,13 +579,13 @@ function (dojo, declare) {
             switch( this.gamedatas.gamestate.name )
             {
                 case 'moveShip':
-                    if (this.selectableShips[shipId]) {
+                    if (this.selectableShips.includes(shipId)) { 
                         dojo.query('.ship-selected').removeClass('ship-selected');
                         dojo.toggleClass(evt.currentTarget.id, 'ship-selected');
                     }
                     break;
                 case 'advanceEconomy':
-                    if (this.selectableShips[shipId]) {
+                    if (this.selectableShips.includes(shipId)) { 
                         this.bgaPerformAction("actAdvanceEconomy", {
                             shipId: shipId,
                         }).then(() =>  {
@@ -591,7 +595,7 @@ function (dojo, declare) {
                     }
                     break;
                 case 'advanceDiplomacy':
-                    if (this.selectableShips[shipId]) {
+                    if (this.selectableShips.includes(shipId)) { 
                         this.bgaPerformAction("actAdvanceDiplomacy", {
                             shipId: shipId,
                         }).then(() =>  {
@@ -601,11 +605,20 @@ function (dojo, declare) {
                     }
                     break;
                 case 'planetAndellouxian':
-                    if (this.selectableShips[shipId]) {
+                    if (this.selectableShips.includes(shipId)) { 
                         dojo.query('.ship-selected').removeClass('ship-selected');
                         dojo.toggleClass(evt.currentTarget.id, 'ship-selected');
                     }
-                    // TODO update energy/culture selectors base on ship track progress
+                    break;
+                case 'planetJorg':
+                    if (this.selectableShips.includes(shipId)) { 
+                        this.bgaPerformAction("actPlanetJorg", {
+                            shipId: shipId,
+                        }).then(() =>  {
+                            // What to do after the server call if it succeeded
+                            // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                        });
+                    }
                     break;
             }
         },
@@ -680,6 +693,31 @@ function (dojo, declare) {
                         shipId: shipId,
                         planetId: planetId,
                         isTrack: true,
+                    }).then(() =>  {
+                        // What to do after the server call if it succeeded
+                        // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                    });
+                }
+            }
+        },
+
+        onHangarClick: function( evt )
+        {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // The click does nothing when not active
+            if (!this.isCurrentPlayerActive()) return;
+            
+            if (this.gamedatas.gamestate.name == 'moveShip') {
+                const shipDom = (dojo.query('.ship-selected')[0]);
+                if (shipDom) {
+                    const shipId = shipDom.id.split('-')[1];
+                    this.bgaPerformAction("actMoveShip", {
+                        shipId: shipId,
+                        planetId: null,
+                        isTrack: false,
                     }).then(() =>  {
                         // What to do after the server call if it succeeded
                         // (most of the time, nothing, as the game will react to notifs / change of state instead)
@@ -888,7 +926,6 @@ function (dojo, declare) {
             console.log('notif_movePlanetToBottomOfDeck', notif);
 
             dojo.destroy(`planet-${notif.planetId}`);
-            // TODO move planet to bottom of deck
         },
    });
 });

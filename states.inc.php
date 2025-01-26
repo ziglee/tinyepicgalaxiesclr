@@ -151,6 +151,7 @@ $playerActionsGameStates = [
             "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
             "planetGyore" => ST_PLAYER_CONVERT_DIE,
             "planetHelios" => ST_PLAYER_PLANET_HELIOS,
+            "planetJorg" => ST_PLAYER_PLANET_JORG,
             "nextFollower" => ST_NEXT_FOLLOWER,
         ]
     ],
@@ -170,6 +171,7 @@ $playerActionsGameStates = [
             "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
             "planetGyore" => ST_PLAYER_CONVERT_DIE,
             "planetHelios" => ST_PLAYER_PLANET_HELIOS,
+            "planetJorg" => ST_PLAYER_PLANET_JORG,
             "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
@@ -241,6 +243,19 @@ $playerPlanetActionsGameStates = [
         "args" => "argPlanetHelios",
         "possibleactions" => [
             "actPlanetHelios", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_JORG => [
+        "name" => "planetJorg",
+        "description" => clienttranslate('${actplayer} must select an enemy ship to regress by -2'), 
+        "descriptionmyturn" => clienttranslate('${you} must select an enemy ship to regress by -2'),
+        "type" => "activeplayer",
+        "args" => "argPlanetJorg",
+        "possibleactions" => [
+            "actPlanetJorg", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

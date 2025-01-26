@@ -39,23 +39,23 @@ trait ArgsTrait {
     public function argMoveShip() {
         $playerId = intval(self::getActivePlayerId());
         return [
-            "selectableShips" => $this->getPlayerShips($playerId),
+            "selectableShips" => $this->getObjectListFromDB("SELECT DISTINCT(ship_id) FROM ships WHERE player_id = $playerId", true),
         ];
     }
 
     public function argAdvanceEconomy() {
         $playerId = intval(self::getActivePlayerId());
-        $ships = $this->getPlayerShips($playerId);
+        // TODO filter ships in planets of track type diplomacy
         return [
-            "selectableShips" => $ships, // TODO: FILTER
+            "selectableShips" => $this->getObjectListFromDB("SELECT DISTINCT(ship_id) FROM ships WHERE player_id = $playerId AND track_progress IS NOT NULL", true),
         ];
     }
 
     public function argAdvanceDiplomacy() {
         $playerId = intval(self::getActivePlayerId());
-        $ships = $this->getPlayerShips($playerId);
+        // TODO filter ships in planets of track type diplomacy
         return [
-            "selectableShips" => $ships, // TODO: FILTER
+            "selectableShips" => $this->getObjectListFromDB("SELECT DISTINCT(ship_id) FROM ships WHERE player_id = $playerId AND track_progress IS NOT NULL", true),
         ];
     }
 
@@ -90,6 +90,13 @@ trait ArgsTrait {
         $planetsIds = array_keys($this->planetCards->getCardsInLocation('centerrow'));
         return [
             "elegiblePlanetsIds" => array_values(array_diff($planetsIds, $occupiedPlanetsIds))
+        ];
+    }
+
+    public function argPlanetJorg() {
+        $playerId = intval(self::getActivePlayerId());
+        return [
+            "selectableShips" => $this->getObjectListFromDB("SELECT DISTINCT(ship_id) FROM ships WHERE planet_id IS NOT NULL AND track_progress IS NOT NULL AND track_progress > 0 AND player_id <> $playerId", true),
         ];
     }
 }
