@@ -288,7 +288,17 @@ function (dojo, declare) {
                 case 'planetAndellouxian':
                     dojo.style( 'andellouxian-selector', 'display', 'flex' );
                     break;
+                case 'planetBrumbaugh':
+                    if (this.isCurrentPlayerActive()) {
+                        this.selectableShips = args.args.selectableShips;
+                    }
+                    break;
                 case 'planetJorg':
+                    if (this.isCurrentPlayerActive()) {
+                        this.selectableShips = args.args.selectableShips;
+                    }
+                    break;
+                case 'planetKwidow':
                     if (this.isCurrentPlayerActive()) {
                         this.selectableShips = args.args.selectableShips;
                     }
@@ -357,6 +367,9 @@ function (dojo, declare) {
                                 this.statusBar.setTitle(_('${you} must select a colonized planet'), args);
                             }
                         }
+                        break;
+                    case 'planetBrumbaugh':
+                        this.addActionButton(`actPlanetBrumbaugh-btn`, _('Confirm ships selection'), () => this.actPlanetBrumbaugh());
                         break;
                 }
             }
@@ -610,9 +623,24 @@ function (dojo, declare) {
                         dojo.toggleClass(evt.currentTarget.id, 'ship-selected');
                     }
                     break;
+                case 'planetBrumbaugh':
+                    if (this.selectableShips.includes(shipId)) { 
+                        dojo.toggleClass(evt.currentTarget.id, 'ship-selected');
+                    }
+                    break;
                 case 'planetJorg':
                     if (this.selectableShips.includes(shipId)) { 
                         this.bgaPerformAction("actPlanetJorg", {
+                            shipId: shipId,
+                        }).then(() =>  {
+                            // What to do after the server call if it succeeded
+                            // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                        });
+                    }
+                    break;
+                case 'planetKwidow':
+                    if (this.selectableShips.includes(shipId)) { 
+                        this.bgaPerformAction("actPlanetKwidow", {
                             shipId: shipId,
                         }).then(() =>  {
                             // What to do after the server call if it succeeded
@@ -743,6 +771,19 @@ function (dojo, declare) {
             });
         },
 
+        actPlanetBrumbaugh: function() {
+            const shipsIds = dojo.query('.ship-selected').map((shipDom) => {
+                return shipDom.id.split('-')[1];
+            });
+
+            this.bgaPerformAction("actPlanetBrumbaugh", {
+                shipsIds: shipsIds.join(','),
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
         onDecideFollowClick: function(follow) {
             this.bgaPerformAction("actDecideFollow", {
                 follow: follow,
@@ -814,12 +855,14 @@ function (dojo, declare) {
         notif_missionChoosed: async function( notif )
         {
             console.log('notif_missionChoosed', notif);
+            
             dojo.destroy('missions-to-choose');
         },
 
         notif_diceUpdated: async function( notif )
         {
             console.log('notif_diceUpdated', notif);
+
             updateDice(notif.dice);
         },
 
@@ -831,6 +874,7 @@ function (dojo, declare) {
         notif_shipUpdated: async function( notif )
         {
             console.log('notif_shipUpdated', notif);
+
             const ship = notif.ship;
             if (ship.planet_id) {
                 if (ship.track_progress) {

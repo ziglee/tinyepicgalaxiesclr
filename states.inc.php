@@ -149,9 +149,11 @@ $playerActionsGameStates = [
             "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
             "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
             "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
+            "planetBrumbaugh" => ST_PLAYER_PLANET_BRUMBAUGH,
             "planetGyore" => ST_PLAYER_CONVERT_DIE,
             "planetHelios" => ST_PLAYER_PLANET_HELIOS,
             "planetJorg" => ST_PLAYER_PLANET_JORG,
+            "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "nextFollower" => ST_NEXT_FOLLOWER,
         ]
     ],
@@ -169,9 +171,11 @@ $playerActionsGameStates = [
             "advanceDiplomacy" => ST_PLAYER_ADVANCE_DIPLOMACY,
             "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
             "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
+            "planetBrumbaugh" => ST_PLAYER_PLANET_BRUMBAUGH,
             "planetGyore" => ST_PLAYER_CONVERT_DIE,
             "planetHelios" => ST_PLAYER_PLANET_HELIOS,
             "planetJorg" => ST_PLAYER_PLANET_JORG,
+            "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
@@ -235,6 +239,19 @@ $playerPlanetActionsGameStates = [
             "" => ST_NEXT_FOLLOWER, 
         ]
     ],
+    ST_PLAYER_PLANET_BRUMBAUGH => [
+        "name" => "planetBrumbaugh",
+        "description" => clienttranslate('${actplayer} must select 2 enemy ships to regress -1'), 
+        "descriptionmyturn" => clienttranslate('${you} must select 2 enemy ships to regress -1'),
+        "type" => "activeplayer",
+        "args" => "argPlanetBrumbaugh",
+        "possibleactions" => [
+            "actPlanetBrumbaugh", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
     ST_PLAYER_PLANET_HELIOS => [
         "name" => "planetHelios",
         "description" => clienttranslate('${actplayer} must place an un-occupied planet from the center row into the bottom of the planet deck'), 
@@ -250,12 +267,25 @@ $playerPlanetActionsGameStates = [
     ],
     ST_PLAYER_PLANET_JORG => [
         "name" => "planetJorg",
-        "description" => clienttranslate('${actplayer} must select an enemy ship to regress by -2'), 
-        "descriptionmyturn" => clienttranslate('${you} must select an enemy ship to regress by -2'),
+        "description" => clienttranslate('${actplayer} must select an enemy ship to regress -2'), 
+        "descriptionmyturn" => clienttranslate('${you} must select an enemy ship to regress -2'),
         "type" => "activeplayer",
         "args" => "argPlanetJorg",
         "possibleactions" => [
             "actPlanetJorg", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_KWIDOW => [
+        "name" => "planetKwidow",
+        "description" => clienttranslate('${actplayer} must regress an enemy ship -1'), 
+        "descriptionmyturn" => clienttranslate('${you} must regress an enemy ship -1'),
+        "type" => "activeplayer",
+        "args" => "argPlanetBrumbaugh",
+        "possibleactions" => [
+            "actPlanetKwidow", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

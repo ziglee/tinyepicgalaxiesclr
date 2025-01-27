@@ -428,6 +428,15 @@ trait ActionTrait {
                 $this->acquireCulture($playerId, $shipsInGalaxyCount);
                 $this->gamestate->nextState("nextFollower");
                 break;
+            case PLANET_BRUMBAUGH:
+                $energyLevel = $playerObj['energy_level'];
+                if ($energyLevel < 2) {
+                    // TODO should not allow this move
+                    $this->gamestate->nextState("nextFollower");
+                } else {
+                    $this->gamestate->nextState("planetBrumbaugh");
+                }
+                break;
             case PLANET_BIRKOMIUS:
                 $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
                 if ($turnOwnerId == $playerId) {
@@ -504,6 +513,9 @@ trait ActionTrait {
                 } else {
                     $this->gamestate->nextState("planetJorg");
                 }
+                break;
+            case PLANET_KWIDOW:
+                $this->gamestate->nextState("planetKwidow");
                 break;
             case PLANET_LEANDRA:
                 $this->gamestate->nextState("advanceEconomy");
@@ -673,6 +685,36 @@ trait ActionTrait {
         $this->gamestate->nextState("");
     }
 
+    public function actPlanetBrumbaugh(#[IntArrayParam] array $shipsIds) {
+        if (count($shipsIds) > 2) { 
+            throw new \BgaUserException('You must select maximum 2 ships to move'); 
+        }
+
+        $playerId = (int)$this->getActivePlayerId();
+        $playerObj = $this->getPlayerObject($playerId);
+        if ($playerObj['energy_level'] < 2) {
+            throw new \BgaUserException('You do not have enough energy for this move');
+        }
+        
+        foreach ($shipsIds as $shipId) {
+            $ship = $this->getShipById($shipId);
+            if ($ship['player_id'] != $playerId && !is_null($ship['planet_id']) && $ship['track_progress'] > 0) {
+                $this->DbQuery("UPDATE ships SET track_progress = GREATEST(0, track_progress - 1) WHERE ship_id = $shipId");
+                $this->notifyAllPlayers("shipUpdated", "", [
+                    "ship" => $this->getShipById($shipId),
+                ]);
+            }
+        }
+
+        $energy_level = $this->incrementPlayerEnergy($playerId, -2);
+        $this->notifyAllPlayers("energyLevelUpdated", '', [
+            "player_id" => $playerId,
+            "energy_level" => $energy_level,
+        ]);
+
+        $this->gamestate->nextState("");
+    }
+
     public function actPlanetHelios(int $planetId) {
         $occupiedPlanetsIds = $this->getObjectListFromDB("SELECT DISTINCT(planet_id) FROM ships WHERE planet_id IS NOT NULL", true);
         foreach ($occupiedPlanetsIds as $occupiedPlanetId) {
@@ -704,7 +746,7 @@ trait ActionTrait {
             throw new \BgaUserException('You cannot selection your own ship');
         }
 
-        $this->DbQuery("UPDATE ships SET track_progress = LEAST(0, track_progress - 2) WHERE ship_id = $shipId");
+        $this->DbQuery("UPDATE ships SET track_progress = GREATEST(0, track_progress - 2) WHERE ship_id = $shipId");
         $this->notifyAllPlayers("shipUpdated", "", [
             "ship" => $this->getShipById($shipId),
         ]);
@@ -714,6 +756,24 @@ trait ActionTrait {
             "player_id" => $playerId,
             "culture_level" => $culture_level,
         ]);
+
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetKwidow(int $shipId) {
+        $playerId = (int)$this->getActivePlayerId();
+        
+        $ship = $this->getShipById($shipId);
+        if ($ship['player_id'] == $playerId) {
+            throw new \BgaUserException('You cannot selection your own ship');
+        }
+
+        if ($ship['player_id'] != $playerId && !is_null($ship['planet_id']) && $ship['track_progress'] > 0) {
+            $this->DbQuery("UPDATE ships SET track_progress = GREATEST(0, track_progress - 1) WHERE ship_id = $shipId");
+            $this->notifyAllPlayers("shipUpdated", "", [
+                "ship" => $this->getShipById($shipId),
+            ]);
+        }
 
         $this->gamestate->nextState("");
     }

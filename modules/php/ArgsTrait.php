@@ -85,6 +85,13 @@ trait ArgsTrait {
         ];
     }
 
+    public function argPlanetBrumbaugh() {
+        $playerId = intval(self::getActivePlayerId());
+        return [
+            "selectableShips" => $this->getObjectListFromDB("SELECT DISTINCT(ship_id) FROM ships WHERE planet_id IS NOT NULL AND track_progress IS NOT NULL AND track_progress > 0 AND player_id <> $playerId", true),
+        ];
+    }
+
     public function argPlanetHelios() {
         $occupiedPlanetsIds = $this->getObjectListFromDB("SELECT DISTINCT(planet_id) FROM ships WHERE planet_id IS NOT NULL", true);
         $planetsIds = array_keys($this->planetCards->getCardsInLocation('centerrow'));
