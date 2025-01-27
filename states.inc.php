@@ -154,6 +154,7 @@ $playerActionsGameStates = [
             "planetHelios" => ST_PLAYER_PLANET_HELIOS,
             "planetJorg" => ST_PLAYER_PLANET_JORG,
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
+            "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "nextFollower" => ST_NEXT_FOLLOWER,
         ]
     ],
@@ -176,6 +177,7 @@ $playerActionsGameStates = [
             "planetHelios" => ST_PLAYER_PLANET_HELIOS,
             "planetJorg" => ST_PLAYER_PLANET_JORG,
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
+            "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
@@ -286,6 +288,19 @@ $playerPlanetActionsGameStates = [
         "args" => "argPlanetBrumbaugh",
         "possibleactions" => [
             "actPlanetKwidow", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_LATORRES => [
+        "name" => "planetLatorres",
+        "description" => clienttranslate('${actplayer} must steal 1 energy from another player'), 
+        "descriptionmyturn" => clienttranslate('${you} must select a player to steal 1 energy from'),
+        "type" => "activeplayer",
+        "args" => "argPlanetLatorres",
+        "possibleactions" => [
+            "actPlanetLatorres", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

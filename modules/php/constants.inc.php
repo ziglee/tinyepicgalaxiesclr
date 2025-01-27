@@ -9,6 +9,7 @@ const TURN_OWNER_ID = 'TURN_OWNER_ID';
 const BIRKOMIUS_TRIGGERED = 'BIRKOMIUS_TRIGGERED';
 const BISSCHOP_TRIGGERED = 'BISSCHOP_TRIGGERED';
 const NIBIRU_TRIGGERED = 'NIBIRU_TRIGGERED';
+const LATORRES_TRIGGERED = 'LATORRES_TRIGGERED';
 
 /*
  * State constants
@@ -33,6 +34,7 @@ const ST_PLAYER_PLANET_HELIOS = 51;
 const ST_PLAYER_PLANET_JORG = 52;
 const ST_PLAYER_PLANET_BRUMBAUGH = 53;
 const ST_PLAYER_PLANET_KWIDOW = 54;
+const ST_PLAYER_PLANET_LATORRES = 55;
 
 const ST_NEXT_PLAYER = 88;
 const ST_AFTER_ACTION_CHECK = 89; 
@@ -170,9 +172,9 @@ const CULTURE_PLANETS = array(
     //CHECKED PLANET_JAKKS => new PlanetInfo("JAKKS", PLANET_TRACK_DIPLOMACY, 1, 1, "Acquire 1 culture."),
     //CHECKED PLANET_JORG => new PlanetInfo("JORG", PLANET_TRACK_DIPLOMACY, 3, 3, "Spend 2 culture to regress 1 enemy ship by -2."),
     //CHECKED PLANET_KWIDOW => new PlanetInfo("K-WIDOW", PLANET_TRACK_ECONOMY, 5, 7, "Regress an enemy ship -1."),
-    PLANET_LATORRES => new PlanetInfo("LA-TORRES", PLANET_TRACK_DIPLOMACY, 1, 2, "Steal 1 energy from another player (only once during your turn)."),
+    //CHECKED PLANET_LATORRES => new PlanetInfo("LA-TORRES", PLANET_TRACK_DIPLOMACY, 1, 2, "Steal 1 energy from another player (only once during your turn)."),
     PLANET_LUREENA => new PlanetInfo("LUREENA", PLANET_TRACK_ECONOMY, 2, 2, "Upgrade your empire, you may spend a mix of energy and culture."),
-    //PLANET_MAIA => new PlanetInfo("MAIA", PLANET_TRACK_DIPLOMACY, 4, 5, "Discard 2 inactive dice, acquire 2 energy and 2 culture."),
+    PLANET_MAIA => new PlanetInfo("MAIA", PLANET_TRACK_DIPLOMACY, 4, 5, "Discard 2 inactive dice, acquire 2 energy and 2 culture."),
     //CHECKED PLANET_NIBIRU => new PlanetInfo("NIBIRU", PLANET_TRACK_DIPLOMACY, 5, 7, "Enemmies must now pay 2 per follow this turn (only during your turn)."),
     //PLANET_OMICRONFENZI => new PlanetInfo("OMICRON-FENZI", PLANET_TRACK_DIPLOMACY, 3, 3, "Convert any number of energy into culture."),
     //PLANET_PADRAIGIN3110 => new PlanetInfo("PADRAIGIN-3110", PLANET_TRACK_ECONOMY, 3, 3, "Spend 2 culture to advance +2 diplomacy."),

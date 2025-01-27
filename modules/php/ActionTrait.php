@@ -517,6 +517,39 @@ trait ActionTrait {
             case PLANET_KWIDOW:
                 $this->gamestate->nextState("planetKwidow");
                 break;
+            case PLANET_LATORRES:
+                if ($this->getGameStateValue(LATORRES_TRIGGERED) == 1) {
+                    $this->notifyAllPlayers("message", \clienttranslate('LA-TORRES causes no effect because it can only be performed once in a turn.'), []);
+                    $this->gamestate->nextState("nextFollower");
+                    break;
+                }
+
+                $playersIds = array_filter(
+                    $this->getPlayersIds(), 
+                    function($loopPlayerId) {
+                        $playerId = intval(self::getActivePlayerId());
+                        return $loopPlayerId != $playerId && $this->getPlayerObject($loopPlayerId)['energy_level'] > 0;
+                    }
+                );
+
+                if (count($playersIds) == 0) {
+                    $this->gamestate->nextState("nextFollower");
+                } else if (count($playersIds) == 1) {
+                    $this->notifyAllPlayers("energyLevelUpdated", '', [
+                        "player_id" => $playersIds[0],
+                        "energy_level" => $this->incrementPlayerEnergy($playersIds[0], -1),
+                    ]);
+                    $this->notifyAllPlayers("energyLevelUpdated", '', [
+                        "player_id" => $playerId,
+                        "energy_level" => $this->incrementPlayerEnergy($playerId, 1),
+                    ]);
+                    $this->setGameStateValue(LATORRES_TRIGGERED, 1);
+                    $this->gamestate->nextState("nextFollower");
+                } else {
+                    $this->gamestate->nextState("planetLatorres");
+                }
+
+                break;
             case PLANET_LEANDRA:
                 $this->gamestate->nextState("advanceEconomy");
                 break;
@@ -775,6 +808,26 @@ trait ActionTrait {
             ]);
         }
 
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetLatorres(int $selectedPlayerId) {
+        $playerId = (int)$this->getActivePlayerId();
+
+        if ($selectedPlayerId == $playerId) {
+            throw new \BgaUserException('You cannot select yourself');
+        }
+
+        $this->notifyAllPlayers("energyLevelUpdated", '', [
+            "player_id" => $selectedPlayerId,
+            "energy_level" => $this->incrementPlayerEnergy($selectedPlayerId, -1),
+        ]);
+        $this->notifyAllPlayers("energyLevelUpdated", '', [
+            "player_id" => $playerId,
+            "energy_level" => $this->incrementPlayerEnergy($playerId, 1),
+        ]);
+        $this->setGameStateValue(LATORRES_TRIGGERED, 1);
+        
         $this->gamestate->nextState("");
     }
 }

@@ -106,4 +106,13 @@ trait ArgsTrait {
             "selectableShips" => $this->getObjectListFromDB("SELECT DISTINCT(ship_id) FROM ships WHERE planet_id IS NOT NULL AND track_progress IS NOT NULL AND track_progress > 0 AND player_id <> $playerId", true),
         ];
     }
+
+    public function argPlanetLatorres() {
+        $playerId = intval(self::getActivePlayerId());
+        return [
+            "players" => array_values($this->getCollectionFromDb(
+                "SELECT `player_id` `id`, `player_name` `name` FROM `player` WHERE `player_id` <> $playerId"
+            ))
+        ];
+    }
 }

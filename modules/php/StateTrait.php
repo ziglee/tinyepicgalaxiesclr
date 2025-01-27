@@ -46,6 +46,7 @@ trait StateTrait {
             $this->setGameStateValue(BIRKOMIUS_TRIGGERED, 0);
             $this->setGameStateValue(BISSCHOP_TRIGGERED, 0);
             $this->setGameStateValue(NIBIRU_TRIGGERED, 0);
+            $this->setGameStateValue(LATORRES_TRIGGERED, 0);
             $this->setGameStateValue(FREE_REROLL_USED, 0);
             $this->resetDice();
     

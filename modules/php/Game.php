@@ -55,6 +55,7 @@ class Game extends \Table
             BIRKOMIUS_TRIGGERED => 17,
             BISSCHOP_TRIGGERED => 18,
             NIBIRU_TRIGGERED => 19,
+            LATORRES_TRIGGERED => 20,
         ]);
 
         $this->missionCards = $this->getNew("module.common.deck");
@@ -120,6 +121,7 @@ class Game extends \Table
         $this->setGameStateInitialValue(BIRKOMIUS_TRIGGERED, 0);
         $this->setGameStateInitialValue(BISSCHOP_TRIGGERED, 0);
         $this->setGameStateInitialValue(NIBIRU_TRIGGERED, 0);
+        $this->setGameStateInitialValue(LATORRES_TRIGGERED, 0);
 
         $playerCount = count($players);
 

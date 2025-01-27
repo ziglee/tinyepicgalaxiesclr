@@ -371,6 +371,11 @@ function (dojo, declare) {
                     case 'planetBrumbaugh':
                         this.addActionButton(`actPlanetBrumbaugh-btn`, _('Confirm ships selection'), () => this.actPlanetBrumbaugh());
                         break;
+                    case 'planetLatorres':
+                        args.players.forEach(player => {
+                            this.addActionButton(`actPlanetLatorres-${player.id}-btn`, dojo.string.substitute(_('Steal energy from ${name}'), { name: player.name }), () => this.actPlanetLatorres(player.id));
+                        });
+                        break;
                 }
             }
         },
@@ -778,6 +783,15 @@ function (dojo, declare) {
 
             this.bgaPerformAction("actPlanetBrumbaugh", {
                 shipsIds: shipsIds.join(','),
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
+        actPlanetLatorres: function(playerId) {
+            this.bgaPerformAction("actPlanetLatorres", {
+                selectedPlayerId: playerId,
             }).then(() =>  {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)
