@@ -451,6 +451,39 @@ trait ActionTrait {
                 }
                 $this->gamestate->nextState("nextFollower");
                 break;
+            case PLANET_CLJ0517:
+                if ($this->getGameStateValue(CLJ0517_TRIGGERED) == 1) {
+                    $this->notifyAllPlayers("message", \clienttranslate('CLJ-0517 causes no effect because it can only be performed once in a turn.'), []);
+                    $this->gamestate->nextState("nextFollower");
+                    break;
+                }
+
+                $playersIds = array_filter(
+                    $this->getPlayersIds(), 
+                    function($loopPlayerId) {
+                        $playerId = intval(self::getActivePlayerId());
+                        return $loopPlayerId != $playerId && $this->getPlayerObject($loopPlayerId)['culture_level'] > 0;
+                    }
+                );
+
+                if (count($playersIds) == 0) {
+                    $this->gamestate->nextState("nextFollower");
+                } else if (count($playersIds) == 1) {
+                    $this->notifyAllPlayers("cultureLevelUpdated", '', [
+                        "player_id" => $playersIds[0],
+                        "culture_level" => $this->incrementPlayerCulture($playersIds[0], -1),
+                    ]);
+                    $this->notifyAllPlayers("cultureLevelUpdated", '', [
+                        "player_id" => $playerId,
+                        "culture_level" => $this->incrementPlayerCulture($playerId, 1),
+                    ]);
+                    $this->setGameStateValue(CLJ0517_TRIGGERED, 1);
+                    $this->gamestate->nextState("nextFollower");
+                } else {
+                    $this->gamestate->nextState("planetClj0517");
+                }
+
+                break;
             case PLANET_DREWKAIDEN:
                 $this->gamestate->nextState("advanceDiplomacy");
                 break;
@@ -827,6 +860,26 @@ trait ActionTrait {
             "energy_level" => $this->incrementPlayerEnergy($playerId, 1),
         ]);
         $this->setGameStateValue(LATORRES_TRIGGERED, 1);
+        
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetClj0517(int $selectedPlayerId) {
+        $playerId = (int)$this->getActivePlayerId();
+
+        if ($selectedPlayerId == $playerId) {
+            throw new \BgaUserException('You cannot select yourself');
+        }
+
+        $this->notifyAllPlayers("cultureLevelUpdated", '', [
+            "player_id" => $selectedPlayerId,
+            "culture_level" => $this->incrementPlayerCulture($selectedPlayerId, -1),
+        ]);
+        $this->notifyAllPlayers("cultureLevelUpdated", '', [
+            "player_id" => $playerId,
+            "culture_level" => $this->incrementPlayerCulture($playerId, 1),
+        ]);
+        $this->setGameStateValue(CLJ0517_TRIGGERED, 1);
         
         $this->gamestate->nextState("");
     }

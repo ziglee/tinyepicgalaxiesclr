@@ -376,6 +376,11 @@ function (dojo, declare) {
                             this.addActionButton(`actPlanetLatorres-${player.id}-btn`, dojo.string.substitute(_('Steal energy from ${name}'), { name: player.name }), () => this.actPlanetLatorres(player.id));
                         });
                         break;
+                    case 'planetClj0517':
+                        args.players.forEach(player => {
+                            this.addActionButton(`actPlanetClj0517-${player.id}-btn`, dojo.string.substitute(_('Steal culture from ${name}'), { name: player.name }), () => this.actPlanetClj0517(player.id));
+                        });
+                        break;
                 }
             }
         },
@@ -791,6 +796,15 @@ function (dojo, declare) {
 
         actPlanetLatorres: function(playerId) {
             this.bgaPerformAction("actPlanetLatorres", {
+                selectedPlayerId: playerId,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
+        actPlanetClj0517: function(playerId) {
+            this.bgaPerformAction("actPlanetClj0517", {
                 selectedPlayerId: playerId,
             }).then(() =>  {
                 // What to do after the server call if it succeeded

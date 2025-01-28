@@ -56,6 +56,7 @@ class Game extends \Table
             BISSCHOP_TRIGGERED => 18,
             NIBIRU_TRIGGERED => 19,
             LATORRES_TRIGGERED => 20,
+            CLJ0517_TRIGGERED => 21,
         ]);
 
         $this->missionCards = $this->getNew("module.common.deck");
@@ -122,6 +123,7 @@ class Game extends \Table
         $this->setGameStateInitialValue(BISSCHOP_TRIGGERED, 0);
         $this->setGameStateInitialValue(NIBIRU_TRIGGERED, 0);
         $this->setGameStateInitialValue(LATORRES_TRIGGERED, 0);
+        $this->setGameStateInitialValue(CLJ0517_TRIGGERED, 0);
 
         $playerCount = count($players);
 

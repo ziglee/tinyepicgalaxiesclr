@@ -150,6 +150,7 @@ $playerActionsGameStates = [
             "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
             "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
             "planetBrumbaugh" => ST_PLAYER_PLANET_BRUMBAUGH,
+            "planetClj0517" => ST_PLAYER_PLANET_CLJ0517,
             "planetGyore" => ST_PLAYER_CONVERT_DIE,
             "planetHelios" => ST_PLAYER_PLANET_HELIOS,
             "planetJorg" => ST_PLAYER_PLANET_JORG,
@@ -173,6 +174,7 @@ $playerActionsGameStates = [
             "advanceEconomy" => ST_PLAYER_ADVANCE_ECONOMY,
             "planetAndellouxian" => ST_PLAYER_PLANET_ANDELLOUXIAN,
             "planetBrumbaugh" => ST_PLAYER_PLANET_BRUMBAUGH,
+            "planetClj0517" => ST_PLAYER_PLANET_CLJ0517,
             "planetGyore" => ST_PLAYER_CONVERT_DIE,
             "planetHelios" => ST_PLAYER_PLANET_HELIOS,
             "planetJorg" => ST_PLAYER_PLANET_JORG,
@@ -301,6 +303,19 @@ $playerPlanetActionsGameStates = [
         "args" => "argPlanetLatorres",
         "possibleactions" => [
             "actPlanetLatorres", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_CLJ0517 => [
+        "name" => "planetClj0517",
+        "description" => clienttranslate('${actplayer} must steal 1 culture from another player'), 
+        "descriptionmyturn" => clienttranslate('${you} must select a player to steal 1 culture from'),
+        "type" => "activeplayer",
+        "args" => "argPlanetLatorres",
+        "possibleactions" => [
+            "actPlanetClj0517", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 
