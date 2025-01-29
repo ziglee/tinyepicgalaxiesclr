@@ -261,8 +261,7 @@ trait ActionTrait {
         $this->gamestate->nextState("");
     }
 
-    private function advanceShip(int $shipId, string $planetTrackType) 
-    {
+    private function advanceShip(int $shipId, string $planetTrackType) : bool {
         $player_id = (int)$this->getActivePlayerId();
         $ship = $this->getShipById($shipId);
 
@@ -288,7 +287,8 @@ trait ActionTrait {
         }
 
         $currentProgress = $this->advanceShipProgress($shipId);
-        if (($planet->info->trackLength + 1) == $currentProgress) {
+        $hasColonizedPlanet = ($planet->info->trackLength + 1) == $currentProgress;
+        if ($hasColonizedPlanet) {
             $ships = $this->getShipsByPlanet($planetId);
             foreach (array_keys($ships) as $thisShipId) { 
                 $this->updateShipLocation($thisShipId, null, null);
@@ -324,6 +324,8 @@ trait ActionTrait {
                 "ship" => $ship,
             ]);
         }
+
+        return $hasColonizedPlanet;
     }
 
     private function upgradeEmpire(string $type): void
@@ -596,6 +598,44 @@ trait ActionTrait {
                     $this->setGameStateValue(NIBIRU_TRIGGERED, 1);
                 }
                 $this->gamestate->nextState("nextFollower");
+                break;
+            case PLANET_PADRAIGIN3110:
+                $ships = $this->getPlayerShips($playerId);
+                $shipsInDiplomacyOrbit = array_filter(
+                    $this->getPlayerShips($playerId), 
+                    function($ship) {
+                        $shipTrackProgress = $ship['track_progress'];
+                        $shipPlanetId = $ship['planet_id'];
+                        if (!is_null($shipTrackProgress) && !is_null($shipPlanetId)) {
+                            $planetCard = $this->planetCards->getCard($shipPlanetId);
+                            $planetDb = new \PlanetCard($planetCard);
+                            if ($planetDb->info->trackType == PLANET_TRACK_DIPLOMACY) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                );
+
+                $cultureLevel = $playerObj['culture_level'];
+                if (count($shipsInDiplomacyOrbit) == 0 || $cultureLevel < 2) {
+                    // TODO should not allow this move
+                    $this->gamestate->nextState("nextFollower");
+                } else if (count($shipsInDiplomacyOrbit) == 1) {
+                    $shipId = array_values($shipsInDiplomacyOrbit)[0]['id'];
+                    $hasColonizedPlanet = $this->advanceShip($shipId, PLANET_TRACK_DIPLOMACY);
+                    if (!$hasColonizedPlanet) {
+                        $this->advanceShip($shipId, PLANET_TRACK_DIPLOMACY);
+                    }
+                    $this->notifyAllPlayers("cultureLevelUpdated", '', [
+                        "player_id" => $playerId,
+                        "culture_level" => $this->incrementPlayerCulture($playerId, -2),
+                    ]);
+                    $this->gamestate->nextState("nextFollower");
+                } else {
+                    $this->gamestate->nextState("planetPadraigin3110");
+                }
+
                 break;
             case PLANET_VICIKS156:
                 $this->acquireEnergy($playerId, 1);
@@ -881,6 +921,20 @@ trait ActionTrait {
         ]);
         $this->setGameStateValue(CLJ0517_TRIGGERED, 1);
         
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetPadraigin3110(int $shipId) {
+        $playerId = (int)$this->getActivePlayerId();
+
+        $hasColonizedPlanet = $this->advanceShip($shipId, PLANET_TRACK_DIPLOMACY);
+        if (!$hasColonizedPlanet) {
+            $this->advanceShip($shipId, PLANET_TRACK_DIPLOMACY);
+        }
+        $this->notifyAllPlayers("cultureLevelUpdated", '', [
+            "player_id" => $playerId,
+            "culture_level" => $this->incrementPlayerCulture($playerId, -2),
+        ]);
         $this->gamestate->nextState("");
     }
 }

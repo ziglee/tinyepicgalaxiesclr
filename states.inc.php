@@ -156,6 +156,7 @@ $playerActionsGameStates = [
             "planetJorg" => ST_PLAYER_PLANET_JORG,
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
+            "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "nextFollower" => ST_NEXT_FOLLOWER,
         ]
     ],
@@ -180,6 +181,7 @@ $playerActionsGameStates = [
             "planetJorg" => ST_PLAYER_PLANET_JORG,
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
+            "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
@@ -316,6 +318,19 @@ $playerPlanetActionsGameStates = [
         "args" => "argPlanetLatorres",
         "possibleactions" => [
             "actPlanetClj0517", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_PADRAIGIN3110 => [
+        "name" => "planetPadraigin3110",
+        "description" => clienttranslate('${actplayer} must spend 2 culture to advance +2 diplomacy'), 
+        "descriptionmyturn" => clienttranslate('${you} must spend 2 culture to advance +2 diplomacy'),
+        "type" => "activeplayer",
+        "args" => "argPlanetPadraigin3110",
+        "possibleactions" => [
+            "actPlanetPadraigin3110", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

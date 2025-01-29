@@ -115,4 +115,31 @@ trait ArgsTrait {
             ))
         ];
     }
+
+    public function argPlanetPadraigin3110() {
+        $playerId = intval(self::getActivePlayerId());
+        $ships = array_filter(
+            $this->getPlayerShips($playerId), 
+            function($ship) {
+                $shipTrackProgress = $ship['track_progress'];
+                $shipPlanetId = $ship['planet_id'];
+                if (!is_null($shipTrackProgress) && !is_null($shipPlanetId)) {
+                    $planetCard = $this->planetCards->getCard($shipPlanetId);
+                    $planetDb = new \PlanetCard($planetCard);
+                    if ($planetDb->info->trackType == PLANET_TRACK_DIPLOMACY) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        );
+        return [
+            "selectableShips" => array_values(
+                array_map(
+                    fn($ship) => $ship['id'],
+                    $ships
+                )
+            ),
+        ];
+    }
 }
