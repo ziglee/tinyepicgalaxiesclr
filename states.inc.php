@@ -157,6 +157,7 @@ $playerActionsGameStates = [
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
+            "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
             "nextFollower" => ST_NEXT_FOLLOWER,
         ]
     ],
@@ -182,6 +183,7 @@ $playerActionsGameStates = [
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
+            "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
             "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
@@ -331,6 +333,19 @@ $playerPlanetActionsGameStates = [
         "args" => "argPlanetPadraigin3110",
         "possibleactions" => [
             "actPlanetPadraigin3110", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_TIFNOD => [
+        "name" => "planetTifnod",
+        "description" => clienttranslate('${actplayer} must regress an enemy ship -1 diplomacy'), 
+        "descriptionmyturn" => clienttranslate('${you} must regress an enemy ship -1 diplomacy'),
+        "type" => "activeplayer",
+        "args" => "argPlanetTifnod",
+        "possibleactions" => [
+            "actPlanetTifnod", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

@@ -641,6 +641,9 @@ trait ActionTrait {
                 $this->acquireEnergy($playerId, 1);
                 $this->gamestate->nextState("nextFollower");
                 break;
+            case PLANET_TIFNOD:
+                $this->gamestate->nextState("planetTifnod");
+                break;
             default: // TODO every other planet and remove default case
                 $this->gamestate->nextState("nextFollower");
                 break;
@@ -934,6 +937,21 @@ trait ActionTrait {
         $this->notifyAllPlayers("cultureLevelUpdated", '', [
             "player_id" => $playerId,
             "culture_level" => $this->incrementPlayerCulture($playerId, -2),
+        ]);
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetTifnod(int $shipId) {
+        $playerId = (int)$this->getActivePlayerId();
+        
+        $ship = $this->getShipById($shipId);
+        if ($ship['player_id'] == $playerId) {
+            throw new \BgaUserException('You cannot selection your own ship');
+        }
+
+        $this->DbQuery("UPDATE ships SET track_progress = GREATEST(0, track_progress - 1) WHERE ship_id = $shipId");
+        $this->notifyAllPlayers("shipUpdated", "", [
+            "ship" => $this->getShipById($shipId),
         ]);
         $this->gamestate->nextState("");
     }
