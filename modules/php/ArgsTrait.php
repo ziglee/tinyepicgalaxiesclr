@@ -192,4 +192,15 @@ trait ArgsTrait {
             ),
         ];
     }
+
+    public function argPlanetShouhua() {
+        return [
+            "selectableShips" => array_values(
+                array_map(
+                    fn($ship) => $ship['id'],
+                    $this->getObjectListFromDB("SELECT `ship_id` `id`, `planet_id` FROM `ships` WHERE `planet_id` IS NOT NULL AND `track_progress` IS NOT NULL AND `track_progress` IS NOT NULL")
+                )
+            ),
+        ];
+    }
 }

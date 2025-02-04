@@ -308,6 +308,11 @@ function (dojo, declare) {
                         this.selectableShips = args.args.selectableShips;
                     }
                     break;
+                case 'planetShouhua':
+                    if (this.isCurrentPlayerActive()) {
+                        this.selectableShips = args.args.selectableShips;
+                    }
+                    break;
                 case 'planetTifnod':
                     if (this.isCurrentPlayerActive()) {
                         this.selectableShips = args.args.selectableShips;
@@ -677,6 +682,16 @@ function (dojo, declare) {
                     console.log('planetPadraigin3110', this.selectableShips);
                     if (this.selectableShips.includes(shipId)) { 
                         this.bgaPerformAction("actPlanetPadraigin3110", {
+                            shipId: shipId,
+                        }).then(() =>  {
+                            // What to do after the server call if it succeeded
+                            // (most of the time, nothing, as the game will react to notifs / change of state instead)
+                        });
+                    }
+                    break;
+                case 'planetShouhua':
+                    if (this.selectableShips.includes(shipId)) { 
+                        this.bgaPerformAction("actPlanetShouhua", {
                             shipId: shipId,
                         }).then(() =>  {
                             // What to do after the server call if it succeeded

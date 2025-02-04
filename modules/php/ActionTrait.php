@@ -265,16 +265,9 @@ trait ActionTrait {
         $player_id = (int)$this->getActivePlayerId();
         $ship = $this->getShipById($shipId);
 
-        if ($ship['player_id'] != $player_id) {
-            throw new \BgaUserException('You cannot move ships of other players');
-        }
         $planetId = $ship['planet_id'];
         if (is_null($planetId)) {
-            if ($planetTrackType == PLANET_TRACK_ECONOMY) {
-                throw new \BgaUserException('You cannot move ship that is not on a economy orbit');
-            } else {
-                throw new \BgaUserException('You cannot move ship that is not on a diplomacy orbit');
-            }
+            throw new \BgaUserException('You cannot move ship that is not on orbit');
         }
         $planetCard = $this->planetCards->getCard($planetId);
         $planet = new \PlanetCard($planetCard);
@@ -637,6 +630,9 @@ trait ActionTrait {
                 }
 
                 break;
+            case PLANET_SHOUHUA:
+                $this->gamestate->nextState("planetShouhua");
+                break;
             case PLANET_TIFNOD:
                 $this->gamestate->nextState("planetTifnod");
                 break;
@@ -983,6 +979,14 @@ trait ActionTrait {
         $this->notifyAllPlayers("shipUpdated", "", [
             "ship" => $this->getShipById($shipId),
         ]);
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetShouhua(int $shipId) {
+        $ship = $this->getShipById($shipId);
+        $planetCard = $this->planetCards->getCard($ship['planet_id']);
+        $planetDb = new \PlanetCard($planetCard);
+        $this->advanceShip($shipId, $planetDb->info->trackType);
         $this->gamestate->nextState("");
     }
 }

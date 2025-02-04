@@ -157,6 +157,7 @@ $playerActionsGameStates = [
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
+            "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
             "planetVizcarra" => ST_PLAYER_PLANET_VIZCARRA,
             "nextFollower" => ST_NEXT_FOLLOWER,
@@ -184,6 +185,7 @@ $playerActionsGameStates = [
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
+            "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
             "planetVizcarra" => ST_PLAYER_PLANET_VIZCARRA,
             "nextFollower" => ST_NEXT_FOLLOWER, 
@@ -322,6 +324,19 @@ $playerPlanetActionsGameStates = [
         "args" => "argPlanetLatorres",
         "possibleactions" => [
             "actPlanetClj0517", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_SHOUHUA => [
+        "name" => "planetShouhua",
+        "description" => clienttranslate('${actplayer} must advance a ship +1'), 
+        "descriptionmyturn" => clienttranslate('${you} must advance a ship +1'),
+        "type" => "activeplayer",
+        "args" => "argPlanetShouhua",
+        "possibleactions" => [
+            "actPlanetShouhua", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 
