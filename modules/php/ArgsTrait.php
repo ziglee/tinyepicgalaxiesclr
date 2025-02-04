@@ -167,4 +167,29 @@ trait ArgsTrait {
             ),
         ];
     }
+
+    public function argPlanetVizcarra() {
+        $playerId = intval(self::getActivePlayerId());
+        $ships = array_filter(
+            $this->getObjectListFromDB("SELECT `ship_id` `id`, `planet_id` FROM `ships` WHERE `planet_id` IS NOT NULL AND `track_progress` IS NOT NULL AND `track_progress` > 0 AND `player_id` <> $playerId"),   
+            function($ship) {
+                $shipPlanetId = $ship['planet_id'];
+                $planetCard = $this->planetCards->getCard($shipPlanetId);
+                $planetDb = new \PlanetCard($planetCard);
+                if ($planetDb->info->trackType == PLANET_TRACK_ECONOMY) {
+                    return true;
+                }
+                return false;
+            }
+        );
+
+        return [
+            "selectableShips" => array_values(
+                array_map(
+                    fn($ship) => $ship['id'],
+                    $ships
+                )
+            ),
+        ];
+    }
 }

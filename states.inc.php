@@ -158,6 +158,7 @@ $playerActionsGameStates = [
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
+            "planetVizcarra" => ST_PLAYER_PLANET_VIZCARRA,
             "nextFollower" => ST_NEXT_FOLLOWER,
         ]
     ],
@@ -184,6 +185,7 @@ $playerActionsGameStates = [
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
+            "planetVizcarra" => ST_PLAYER_PLANET_VIZCARRA,
             "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
@@ -346,6 +348,19 @@ $playerPlanetActionsGameStates = [
         "args" => "argPlanetTifnod",
         "possibleactions" => [
             "actPlanetTifnod", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_VIZCARRA => [
+        "name" => "planetVizcarra",
+        "description" => clienttranslate('${actplayer} must regress an enemy ship -1 economy'), 
+        "descriptionmyturn" => clienttranslate('${you} must regress an enemy ship -1 economy'),
+        "type" => "activeplayer",
+        "args" => "argPlanetVizcarra",
+        "possibleactions" => [
+            "actPlanetVizcarra", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

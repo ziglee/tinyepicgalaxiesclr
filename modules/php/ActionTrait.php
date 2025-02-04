@@ -637,12 +637,15 @@ trait ActionTrait {
                 }
 
                 break;
+            case PLANET_TIFNOD:
+                $this->gamestate->nextState("planetTifnod");
+                break;
             case PLANET_VICIKS156:
                 $this->acquireEnergy($playerId, 1);
                 $this->gamestate->nextState("nextFollower");
                 break;
-            case PLANET_TIFNOD:
-                $this->gamestate->nextState("planetTifnod");
+            case PLANET_VIZCARRA:
+                $this->gamestate->nextState("planetVizcarra");
                 break;
             default: // TODO every other planet and remove default case
                 $this->gamestate->nextState("nextFollower");
@@ -947,6 +950,33 @@ trait ActionTrait {
         $ship = $this->getShipById($shipId);
         if ($ship['player_id'] == $playerId) {
             throw new \BgaUserException('You cannot selection your own ship');
+        }
+
+        $planetCard = $this->planetCards->getCard($ship['planet_id']);
+        $planetDb = new \PlanetCard($planetCard);
+        if ($planetDb->info->trackType != PLANET_TRACK_DIPLOMACY) {
+            throw new \BgaUserException('You cannot move ship that is not on a diplomacy orbit');
+        }
+
+        $this->DbQuery("UPDATE ships SET track_progress = GREATEST(0, track_progress - 1) WHERE ship_id = $shipId");
+        $this->notifyAllPlayers("shipUpdated", "", [
+            "ship" => $this->getShipById($shipId),
+        ]);
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetVizcarra(int $shipId) {
+        $playerId = (int)$this->getActivePlayerId();
+        
+        $ship = $this->getShipById($shipId);
+        if ($ship['player_id'] == $playerId) {
+            throw new \BgaUserException('You cannot selection your own ship');
+        }
+
+        $planetCard = $this->planetCards->getCard($ship['planet_id']);
+        $planetDb = new \PlanetCard($planetCard);
+        if ($planetDb->info->trackType != PLANET_TRACK_ECONOMY) {
+            throw new \BgaUserException('You cannot move ship that is not on a economy orbit');
         }
 
         $this->DbQuery("UPDATE ships SET track_progress = GREATEST(0, track_progress - 1) WHERE ship_id = $shipId");
