@@ -104,11 +104,23 @@ function (dojo, declare) {
                     </div>
                     <a href="#" id="andellouxian-confirm-btn" class="bgabutton bgabutton_blue"><span>confirm</span></a>
                 </div>
+                <div id="lureena-selector" class="whiteblock" style="display: none;">
+                    <div class="die-face" data-face="2"></div>
+                    <div>
+                        <input type="number" id="lureena-selector-energy" min="0" max="7" value="0">
+                    </div>
+                    <div class="die-face" data-face="4"></div>
+                    <div>
+                        <input type="number" id="lureena-selector-culture" min="0" max="7" value="0">
+                    </div>
+                    <a href="#" id="lureena-confirm-btn" class="bgabutton bgabutton_blue"><span>confirm</span></a>
+                </div>
                 <div id="player-tables"></div>
                 <div id="activation-bay"></div>
             `);
 
             document.getElementById('andellouxian-confirm-btn').addEventListener('click', e => this.onAndellouxianConfirmClick(e));
+            document.getElementById('lureena-confirm-btn').addEventListener('click', e => this.onLureenaConfirmClick(e));
             
             updateDice(gamedatas.dice);
             document.querySelectorAll('.die-slot').forEach(die => {
@@ -303,6 +315,9 @@ function (dojo, declare) {
                         this.selectableShips = args.args.selectableShips;
                     }
                     break;
+                case 'planetLureena':
+                    dojo.style( 'lureena-selector', 'display', 'flex' );
+                    break;
                 case 'planetPadraigin3110':
                     if (this.isCurrentPlayerActive()) {
                         this.selectableShips = args.args.selectableShips;
@@ -335,6 +350,7 @@ function (dojo, declare) {
             dojo.query('.die-active').removeClass('die-active');
             dojo.query('.ship-selected').removeClass('ship-selected');
             dojo.style( 'andellouxian-selector', 'display', 'none' );
+            dojo.style( 'lureena-selector', 'display', 'none' );
             
             switch( stateName ) {
                 case 'convertDie':
@@ -898,6 +914,25 @@ function (dojo, declare) {
 
             this.bgaPerformAction("actPlanetAdellouxian", {
                 shipId: shipId,
+                energy: energy,
+                culture: culture,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
+        onLureenaConfirmClick: function( evt )
+        {
+            evt.preventDefault();
+            evt.stopPropagation();
+            
+            if (!this.isCurrentPlayerActive()) return;
+            
+            const energy = dojo.attr('lureena-selector-energy', 'value');
+            const culture = dojo.attr('lureena-selector-culture', 'value');
+
+            this.bgaPerformAction("actPlanetLureena", {
                 energy: energy,
                 culture: culture,
             }).then(() =>  {

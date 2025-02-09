@@ -156,6 +156,7 @@ $playerActionsGameStates = [
             "planetJorg" => ST_PLAYER_PLANET_JORG,
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
+            "planetLureena" => ST_PLAYER_PLANET_LUREENA,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
@@ -184,6 +185,7 @@ $playerActionsGameStates = [
             "planetJorg" => ST_PLAYER_PLANET_JORG,
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
+            "planetLureena" => ST_PLAYER_PLANET_LUREENA,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
@@ -264,6 +266,19 @@ $playerPlanetActionsGameStates = [
             "" => ST_NEXT_FOLLOWER, 
         ]
     ],
+    ST_PLAYER_PLANET_CLJ0517 => [
+        "name" => "planetClj0517",
+        "description" => clienttranslate('${actplayer} must steal 1 culture from another player'), 
+        "descriptionmyturn" => clienttranslate('${you} must select a player to steal 1 culture from'),
+        "type" => "activeplayer",
+        "args" => "argPlanetLatorres",
+        "possibleactions" => [
+            "actPlanetClj0517", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
     ST_PLAYER_PLANET_HELIOS => [
         "name" => "planetHelios",
         "description" => clienttranslate('${actplayer} must place an un-occupied planet from the center row into the bottom of the planet deck'), 
@@ -316,14 +331,14 @@ $playerPlanetActionsGameStates = [
             "" => ST_NEXT_FOLLOWER, 
         ]
     ],
-    ST_PLAYER_PLANET_CLJ0517 => [
-        "name" => "planetClj0517",
-        "description" => clienttranslate('${actplayer} must steal 1 culture from another player'), 
-        "descriptionmyturn" => clienttranslate('${you} must select a player to steal 1 culture from'),
+    ST_PLAYER_PLANET_LUREENA => [
+        "name" => "planetLureena",
+        "description" => clienttranslate('${actplayer} must spend a mix of energy and culture to upgrade its empire'), 
+        "descriptionmyturn" => clienttranslate('${you} must spend a mix of energy and culture to upgrade your empire'),
         "type" => "activeplayer",
-        "args" => "argPlanetLatorres",
+        "args" => "argPlanetLureena",
         "possibleactions" => [
-            "actPlanetClj0517", 
+            "actPlanetLureena", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

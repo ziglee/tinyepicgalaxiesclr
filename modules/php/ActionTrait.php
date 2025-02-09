@@ -354,6 +354,10 @@ trait ActionTrait {
         }
 
         $this->updatePlayerEmpire($playerId, $nextEmpireLevel);
+        $this->afterUpgradeEmpire($nextEmpireLevel, $playerId);
+    }
+
+    private function afterUpgradeEmpire(int $nextEmpireLevel, int $playerId) {
         $this->notifyAllPlayers("empireLevelUpdated", "", [
             "player_id" => $playerId,
             "player_name" => $this->getActivePlayerName(),
@@ -580,6 +584,19 @@ trait ActionTrait {
                 break;
             case PLANET_LEANDRA:
                 $this->gamestate->nextState("advanceEconomy");
+                break;
+            case PLANET_LUREENA:
+                $energyLevel = $playerObj['energy_level'];
+                $cultureLevel = $playerObj['culture_level'];
+                $nextEmpireLevel = $playerObj['empire_level'] + 1;
+                if ($nextEmpireLevel == 1) {
+                    $nextEmpireLevel = 2;
+                }
+                if (($energyLevel + $cultureLevel) >= $nextEmpireLevel && $playerObj['empire_level'] < 6) {
+                    $this->gamestate->nextState("planetLureena");
+                } else {
+                    $this->gamestate->nextState("nextFollower");
+                }
                 break;
             case PLANET_MJ120210:
                 $this->acquireEnergy($playerId, 2);
@@ -987,6 +1004,38 @@ trait ActionTrait {
         $planetCard = $this->planetCards->getCard($ship['planet_id']);
         $planetDb = new \PlanetCard($planetCard);
         $this->advanceShip($shipId, $planetDb->info->trackType);
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetLureena(int $energy, int $culture) {
+        $playerId = (int)$this->getActivePlayerId();
+
+        $playerObj = $this->getPlayerObject($playerId);
+        $nextEmpireLevel = $playerObj['empire_level'] + 1;
+        if ($nextEmpireLevel == 1) {
+            $nextEmpireLevel = 2;
+        }
+
+        if (($energy + $culture) != $nextEmpireLevel) {
+            throw new \BgaUserException('Not enough energy and culture to upgrade empire');
+        }
+
+        $energyLevel = $this->incrementPlayerEnergy($playerId, -$energy);
+        $cultureLevel = $this->incrementPlayerCulture($playerId, -$culture);
+        $this->notifyAllPlayers("energyLevelUpdated", '', [
+            "player_id" => $playerId,
+            "player_name" => $this->getActivePlayerName(),
+            "energy_level" => $energyLevel,
+        ]);
+        $this->notifyAllPlayers("cultureLevelUpdated", '', [
+            "player_id" => $playerId,
+            "player_name" => $this->getActivePlayerName(),
+            "culture_level" => $cultureLevel,
+        ]);
+        
+        $this->updatePlayerEmpire($playerId, $nextEmpireLevel);
+        $this->afterUpgradeEmpire($nextEmpireLevel, $playerId);
+        
         $this->gamestate->nextState("");
     }
 }

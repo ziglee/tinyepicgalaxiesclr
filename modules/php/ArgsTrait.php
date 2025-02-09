@@ -203,4 +203,17 @@ trait ArgsTrait {
             ),
         ];
     }
+
+    public function argPlanetLureena() {
+        $playerId = intval(self::getActivePlayerId());
+        $playerObj = $this->getPlayerObject($playerId);
+        $energyLevel = $playerObj['energy_level'];
+        $cultureLevel = $playerObj['culture_level'];
+        $nextEmpireLevel = $playerObj['empire_level'] + 1;
+        return [
+            "energyLevel" => $energyLevel,
+            "cultureLevel" => $cultureLevel,
+            "nextEmpireLevel" => $nextEmpireLevel,
+        ];
+    }
 }
