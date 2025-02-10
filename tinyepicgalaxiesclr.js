@@ -523,39 +523,51 @@ function (dojo, declare) {
                 rerollBtnText = "Free reroll";
                 rerollBtnClass = "bgabutton_green";
             }
-            
-            if (ids.length == 1) {
-                document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                    <a href="#" id="activate-die-btn" class="bgabutton bgabutton_blue"><span>Activate die</span></a>
-                `);
-                document.getElementById('activate-die-btn').addEventListener('click', e => this.onActivateDieClick(ids[0]));
 
-                if (this.canFreeReroll || this.canReroll) {
-                    document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                        <a href="#" id="reroll-dice-btn" class="bgabutton ${rerollBtnClass}"><span>${rerollBtnText} die</span></a>
-                    `);
-                    document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
-                }
-            } else if (ids.length == 2) {
-                if (this.canConvert) {
-                    document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                        <a href="#" id="convert-dice-btn" class="bgabutton bgabutton_blue"><span>Convert die</span></a>
-                    `);
-                    document.getElementById('convert-dice-btn').addEventListener('click', e => this.onSelectConverterDiceClick(ids[0], ids[1]));
-                }
-                if (this.canFreeReroll || this.canReroll) {
-                    document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                        <a href="#" id="reroll-dice-btn" class="bgabutton ${rerollBtnClass}"><span>${rerollBtnText} dice</span></a>
-                    `);
-                    document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
-                }
-            } else if (ids.length > 2) {
-                if (this.canFreeReroll || this.canReroll) {
-                    document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
-                        <a href="#" id="reroll-dice-btn" class="bgabutton ${rerollBtnClass}"><span>${rerollBtnText} dice</span></a>
-                    `);
-                    document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
-                }
+            switch( this.gamedatas.gamestate.name )
+            {
+                case 'planetMaia':
+                    if (ids.length == 2) {
+                        document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                            <a href="#" id="planet-maia-btn" class="bgabutton bgabutton_blue"><span>Confirm dice selection</span></a>
+                        `);
+                        document.getElementById('planet-maia-btn').addEventListener('click', e => this.actPlanetMaia(ids));
+                    }
+                    break;
+                default:
+                    if (ids.length == 1) {
+                        document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                            <a href="#" id="activate-die-btn" class="bgabutton bgabutton_blue"><span>Activate die</span></a>
+                        `);
+                        document.getElementById('activate-die-btn').addEventListener('click', e => this.onActivateDieClick(ids[0]));
+        
+                        if (this.canFreeReroll || this.canReroll) {
+                            document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                                <a href="#" id="reroll-dice-btn" class="bgabutton ${rerollBtnClass}"><span>${rerollBtnText} die</span></a>
+                            `);
+                            document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
+                        }
+                    } else if (ids.length == 2) {
+                        if (this.canConvert) {
+                            document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                                <a href="#" id="convert-dice-btn" class="bgabutton bgabutton_blue"><span>Convert die</span></a>
+                            `);
+                            document.getElementById('convert-dice-btn').addEventListener('click', e => this.onSelectConverterDiceClick(ids[0], ids[1]));
+                        }
+                        if (this.canFreeReroll || this.canReroll) {
+                            document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                                <a href="#" id="reroll-dice-btn" class="bgabutton ${rerollBtnClass}"><span>${rerollBtnText} dice</span></a>
+                            `);
+                            document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
+                        }
+                    } else if (ids.length > 2) {
+                        if (this.canFreeReroll || this.canReroll) {
+                            document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                                <a href="#" id="reroll-dice-btn" class="bgabutton ${rerollBtnClass}"><span>${rerollBtnText} dice</span></a>
+                            `);
+                            document.getElementById('reroll-dice-btn').addEventListener('click', e => this.onRerollDiceClick(ids));
+                        }
+                    }
             }
         },
 
@@ -871,6 +883,15 @@ function (dojo, declare) {
             });
         },
 
+        actPlanetClj0517: function(playerId) {
+            this.bgaPerformAction("actPlanetClj0517", {
+                selectedPlayerId: playerId,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
         actPlanetLatorres: function(playerId) {
             this.bgaPerformAction("actPlanetLatorres", {
                 selectedPlayerId: playerId,
@@ -880,9 +901,10 @@ function (dojo, declare) {
             });
         },
 
-        actPlanetClj0517: function(playerId) {
-            this.bgaPerformAction("actPlanetClj0517", {
-                selectedPlayerId: playerId,
+        actPlanetMaia: function(diceIds) {
+            this.bgaPerformAction("actPlanetMaia", {
+                dice1Id: diceIds[0],
+                dice2Id: diceIds[1],
             }).then(() =>  {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)

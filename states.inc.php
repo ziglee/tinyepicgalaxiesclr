@@ -157,6 +157,7 @@ $playerActionsGameStates = [
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetLureena" => ST_PLAYER_PLANET_LUREENA,
+            "planetMaia" => ST_PLAYER_PLANET_MAIA,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
@@ -186,6 +187,7 @@ $playerActionsGameStates = [
             "planetKwidow" => ST_PLAYER_PLANET_KWIDOW,
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetLureena" => ST_PLAYER_PLANET_LUREENA,
+            "planetMaia" => ST_PLAYER_PLANET_MAIA,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
@@ -339,6 +341,18 @@ $playerPlanetActionsGameStates = [
         "args" => "argPlanetLureena",
         "possibleactions" => [
             "actPlanetLureena", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_MAIA => [
+        "name" => "planetMaia",
+        "description" => clienttranslate('${actplayer} must discard 2 inactive dice to acquire 2 energy and 2 culture'), 
+        "descriptionmyturn" => clienttranslate('${you} must discard 2 inactive dice to acquire 2 energy and 2 culture'),
+        "type" => "activeplayer",
+        "possibleactions" => [
+            "actPlanetMaia", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

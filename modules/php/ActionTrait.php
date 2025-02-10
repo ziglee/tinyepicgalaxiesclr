@@ -598,6 +598,19 @@ trait ActionTrait {
                     $this->gamestate->nextState("nextFollower");
                 }
                 break;
+            case PLANET_MAIA:
+                $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
+                if ($turnOwnerId == $playerId) {
+                    $inactiveDiceCount = $this->getUniqueIntValueFromDB("SELECT COUNT(*) FROM dice AS d WHERE d.used = 0 AND d.face <> 0");
+                    if ($inactiveDiceCount >= 2) {
+                        $this->gamestate->nextState("planetMaia");
+                    } else {
+                        $this->gamestate->nextState("nextFollower");
+                    }
+                } else {
+                    $this->gamestate->nextState("nextFollower");
+                }
+                break;
             case PLANET_MJ120210:
                 $this->acquireEnergy($playerId, 2);
                 $this->gamestate->nextState("nextFollower");
@@ -1036,6 +1049,26 @@ trait ActionTrait {
         $this->updatePlayerEmpire($playerId, $nextEmpireLevel);
         $this->afterUpgradeEmpire($nextEmpireLevel, $playerId);
         
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetMaia(int $dice1Id, int $dice2Id) {
+        $playerId = (int)$this->getActivePlayerId();
+
+        $this->useDie($dice1Id);
+        $this->useDie($dice2Id);
+        
+        $this->notifyAllPlayers(
+            "diceUpdated", 
+            "", 
+            array(
+                'dice' => $this->getDice(),
+            )
+        );
+
+        $this->acquireEnergy($playerId, 2);
+        $this->acquireCulture($playerId, 2);
+
         $this->gamestate->nextState("");
     }
 }
