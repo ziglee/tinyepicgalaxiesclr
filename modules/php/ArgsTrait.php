@@ -216,4 +216,13 @@ trait ArgsTrait {
             "nextEmpireLevel" => $nextEmpireLevel,
         ];
     }
+
+    public function argPlanetOmicronfenzi() {
+        $playerId = intval(self::getActivePlayerId());
+        $playerObj = $this->getPlayerObject($playerId);
+        $energyLevel = $playerObj['energy_level'];
+        return [
+            "max" => $energyLevel,
+        ];
+    }
 }

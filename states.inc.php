@@ -158,6 +158,7 @@ $playerActionsGameStates = [
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetLureena" => ST_PLAYER_PLANET_LUREENA,
             "planetMaia" => ST_PLAYER_PLANET_MAIA,
+            "planetOmicronfenzi" => ST_PLAYER_PLANET_OMICRONFENZI,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
@@ -188,6 +189,7 @@ $playerActionsGameStates = [
             "planetLatorres" => ST_PLAYER_PLANET_LATORRES,
             "planetLureena" => ST_PLAYER_PLANET_LUREENA,
             "planetMaia" => ST_PLAYER_PLANET_MAIA,
+            "planetOmicronfenzi" => ST_PLAYER_PLANET_OMICRONFENZI,
             "planetPadraigin3110" => ST_PLAYER_PLANET_PADRAIGIN3110,
             "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
@@ -353,6 +355,19 @@ $playerPlanetActionsGameStates = [
         "type" => "activeplayer",
         "possibleactions" => [
             "actPlanetMaia", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_OMICRONFENZI => [
+        "name" => "planetOmicronfenzi",
+        "description" => clienttranslate('${actplayer} must convert any number of energy into culture'), 
+        "descriptionmyturn" => clienttranslate('${you} must convert any number of energy into culture'),
+        "type" => "activeplayer",
+        "args" => "argPlanetOmicronfenzi",
+        "possibleactions" => [
+            "actPlanetOmicronfenzi", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

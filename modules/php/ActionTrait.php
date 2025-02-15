@@ -622,6 +622,14 @@ trait ActionTrait {
                 }
                 $this->gamestate->nextState("nextFollower");
                 break;
+            case PLANET_OMICRONFENZI:
+                $energyLevel = $playerObj['energy_level'];
+                if ($energyLevel > 0) {
+                    $this->gamestate->nextState("planetOmicronfenzi");
+                } else {
+                    $this->gamestate->nextState("nextFollower");
+                }
+                break;
             case PLANET_PADRAIGIN3110:
                 $ships = $this->getPlayerShips($playerId);
                 $shipsInDiplomacyOrbit = array_filter(
@@ -1069,6 +1077,27 @@ trait ActionTrait {
         $this->acquireEnergy($playerId, 2);
         $this->acquireCulture($playerId, 2);
 
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetOmicronfenzi(int $amount) {
+        $playerId = (int)$this->getActivePlayerId();
+
+        $playerObj = $this->getPlayerObject($playerId);
+        $energyLevel = $playerObj['energy_level'];
+        if ($amount > $energyLevel) {
+            throw new \BgaUserException('You do not have enough energy for this move');
+        }
+
+        $energyLevel = $this->incrementPlayerEnergy($playerId, $amount * -1);
+        $this->notifyAllPlayers("energyLevelUpdated", '', [
+            "player_id" => $playerId,
+            "player_name" => $this->getActivePlayerName(),
+            "energy_level" => $energyLevel,
+        ]);
+        
+        $this->acquireCulture($playerId, $amount);
+        
         $this->gamestate->nextState("");
     }
 }

@@ -115,12 +115,19 @@ function (dojo, declare) {
                     </div>
                     <a href="#" id="lureena-confirm-btn" class="bgabutton bgabutton_blue"><span>confirm</span></a>
                 </div>
+                <div id="omicronfenzi-selector" class="whiteblock" style="display: none;">
+                    <div>
+                        <input type="number" id="omicronfenzi-selector-energy" min="0" max="7" value="0">
+                    </div>
+                    <a href="#" id="omicronfenzi-confirm-btn" class="bgabutton bgabutton_blue"><span>confirm</span></a>
+                </div>
                 <div id="player-tables"></div>
                 <div id="activation-bay"></div>
             `);
 
             document.getElementById('andellouxian-confirm-btn').addEventListener('click', e => this.onAndellouxianConfirmClick(e));
             document.getElementById('lureena-confirm-btn').addEventListener('click', e => this.onLureenaConfirmClick(e));
+            document.getElementById('omicronfenzi-confirm-btn').addEventListener('click', e => this.onOmicronfenziConfirmClick(e));
             
             updateDice(gamedatas.dice);
             document.querySelectorAll('.die-slot').forEach(die => {
@@ -318,6 +325,11 @@ function (dojo, declare) {
                 case 'planetLureena':
                     dojo.style( 'lureena-selector', 'display', 'flex' );
                     break;
+                case 'planetOmicronfenzi':
+                    console.log('planetOmicronfenzi', args.args.max);
+                    dojo.style( 'omicronfenzi-selector', 'display', 'flex' );
+                    dojo.attr( 'omicronfenzi-selector-energy', 'max', args.args.max );
+                    break;
                 case 'planetPadraigin3110':
                     if (this.isCurrentPlayerActive()) {
                         this.selectableShips = args.args.selectableShips;
@@ -351,6 +363,7 @@ function (dojo, declare) {
             dojo.query('.ship-selected').removeClass('ship-selected');
             dojo.style( 'andellouxian-selector', 'display', 'none' );
             dojo.style( 'lureena-selector', 'display', 'none' );
+            dojo.style( 'omicronfenzi-selector', 'display', 'none' );
             
             switch( stateName ) {
                 case 'convertDie':
@@ -962,6 +975,24 @@ function (dojo, declare) {
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)
             });
         },
+
+        onOmicronfenziConfirmClick: function( evt )
+        {
+            evt.preventDefault();
+            evt.stopPropagation();
+            
+            if (!this.isCurrentPlayerActive()) return;
+            
+            const amount = dojo.attr('omicronfenzi-selector-energy', 'value');
+
+            this.bgaPerformAction("actPlanetOmicronfenzi", {
+                amount: amount,
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
 
         
         ///////////////////////////////////////////////////
