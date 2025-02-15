@@ -163,6 +163,7 @@ $playerActionsGameStates = [
             "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
             "planetVizcarra" => ST_PLAYER_PLANET_VIZCARRA,
+            "planetZalax" => ST_PLAYER_PLANET_ZALAX,
             "nextFollower" => ST_NEXT_FOLLOWER,
         ]
     ],
@@ -194,6 +195,7 @@ $playerActionsGameStates = [
             "planetShouhua" => ST_PLAYER_PLANET_SHOUHUA,
             "planetTifnod" => ST_PLAYER_PLANET_TIFNOD,
             "planetVizcarra" => ST_PLAYER_PLANET_VIZCARRA,
+            "planetZalax" => ST_PLAYER_PLANET_ZALAX,
             "nextFollower" => ST_NEXT_FOLLOWER, 
         ]
     ],
@@ -420,6 +422,18 @@ $playerPlanetActionsGameStates = [
         "args" => "argPlanetVizcarra",
         "possibleactions" => [
             "actPlanetVizcarra", 
+        ],
+        "transitions" => [
+            "" => ST_NEXT_FOLLOWER, 
+        ]
+    ],
+    ST_PLAYER_PLANET_ZALAX => [
+        "name" => "planetZalax",
+        "description" => clienttranslate('${actplayer} must reroll any number of inactive dice'), 
+        "descriptionmyturn" => clienttranslate('${you} must reroll any number of inactive dice'),
+        "type" => "activeplayer",
+        "possibleactions" => [
+            "actPlanetZalax", 
         ],
         "transitions" => [
             "" => ST_NEXT_FOLLOWER, 

@@ -326,7 +326,6 @@ function (dojo, declare) {
                     dojo.style( 'lureena-selector', 'display', 'flex' );
                     break;
                 case 'planetOmicronfenzi':
-                    console.log('planetOmicronfenzi', args.args.max);
                     dojo.style( 'omicronfenzi-selector', 'display', 'flex' );
                     dojo.attr( 'omicronfenzi-selector-energy', 'max', args.args.max );
                     break;
@@ -545,6 +544,14 @@ function (dojo, declare) {
                             <a href="#" id="planet-maia-btn" class="bgabutton bgabutton_blue"><span>Confirm dice selection</span></a>
                         `);
                         document.getElementById('planet-maia-btn').addEventListener('click', e => this.actPlanetMaia(ids));
+                    }
+                    break;
+                case 'planetZalax':
+                    if (ids.length > 0) {
+                        document.getElementById('dice-buttons').insertAdjacentHTML('beforeend', `
+                            <a href="#" id="reroll-dice-btn" class="bgabutton bgabutton_green"><span>Free reroll dice</span></a>
+                        `);
+                        document.getElementById('reroll-dice-btn').addEventListener('click', e => this.actPlanetZalax(ids));
                     }
                     break;
                 default:
@@ -918,6 +925,15 @@ function (dojo, declare) {
             this.bgaPerformAction("actPlanetMaia", {
                 dice1Id: diceIds[0],
                 dice2Id: diceIds[1],
+            }).then(() =>  {
+                // What to do after the server call if it succeeded
+                // (most of the time, nothing, as the game will react to notifs / change of state instead)
+            });
+        },
+
+        actPlanetZalax: function(ids) {
+            this.bgaPerformAction("actPlanetZalax", {
+                ids: ids.join(','),
             }).then(() =>  {
                 // What to do after the server call if it succeeded
                 // (most of the time, nothing, as the game will react to notifs / change of state instead)

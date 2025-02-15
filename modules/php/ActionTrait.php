@@ -681,6 +681,19 @@ trait ActionTrait {
             case PLANET_VIZCARRA:
                 $this->gamestate->nextState("planetVizcarra");
                 break;
+            case PLANET_ZALAX:
+                $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
+                if ($turnOwnerId == $playerId) {
+                    $inactiveDiceCount = $this->getUniqueIntValueFromDB("SELECT COUNT(*) FROM dice AS d WHERE d.used = 0 AND d.face <> 0");
+                    if ($inactiveDiceCount > 0) {
+                        $this->gamestate->nextState("planetZalax");
+                    } else {
+                        $this->gamestate->nextState("nextFollower");
+                    }
+                } else {
+                    $this->gamestate->nextState("nextFollower");
+                }
+                break;
             default: // TODO every other planet and remove default case
                 $this->gamestate->nextState("nextFollower");
                 break;
@@ -1095,9 +1108,31 @@ trait ActionTrait {
             "player_name" => $this->getActivePlayerName(),
             "energy_level" => $energyLevel,
         ]);
-        
+
         $this->acquireCulture($playerId, $amount);
         
+        $this->gamestate->nextState("");
+    }
+
+    public function actPlanetZalax(#[IntArrayParam] array $ids): void
+    {
+        $playerId = intval(self::getCurrentPlayerId());
+
+        $turnOwnerId = $this->getGameStateValue(TURN_OWNER_ID);
+        if ($turnOwnerId != $playerId) {
+            throw new \BgaUserException('You cannot reroll dice of other players');
+        }
+
+        $this->rollDiceIds($ids);
+
+        $this->notifyAllPlayers(
+            "diceUpdated", 
+            "", 
+            array(
+                'dice' => $this->getDice(),
+            )
+        );
+
         $this->gamestate->nextState("");
     }
 }
